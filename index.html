@@ -1,0 +1,1203 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>LUMIVERSION | Astaxanthin Decision Studio</title>
+<meta name="description" content="Decision support for Haematococcus astaxanthin production: when to transfer, when to harvest, and when to hold back. Works with the records you already keep.">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#ffffff">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="LUMIVERSION">
+<meta property="og:title" content="LUMIVERSION | Astaxanthin Decision Studio">
+<meta property="og:description" content="Get more astaxanthin from every reactor-day: clear transfer and harvest decisions from the records you already keep.">
+<meta property="og:url" content="https://lynee1.github.io/Astaxanthin-demo-ENG/">
+<meta property="og:image" content="https://lynee1.github.io/Astaxanthin-demo-ENG/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="LUMIVERSION Astaxanthin Decision Studio">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.ico" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preload" href="fonts/barlow-latin-500-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/barlow-latin-700-normal.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+@font-face{font-family:"Barlow";font-style:normal;font-weight:500;font-display:swap;src:url(fonts/barlow-latin-500-normal.woff2) format("woff2")}
+@font-face{font-family:"Barlow";font-style:normal;font-weight:600;font-display:swap;src:url(fonts/barlow-latin-600-normal.woff2) format("woff2")}
+@font-face{font-family:"Barlow";font-style:normal;font-weight:700;font-display:swap;src:url(fonts/barlow-latin-700-normal.woff2) format("woff2")}
+/* Brand: navy / royal / gold from the LUMIVERSION mark. Data colours: algae green (growth) and astaxanthin red (induction). */
+:root{
+  --navy:#072957; --navy-2:#0c3871; --royal:#134E96; --royal-soft:#e7eef8;
+  --gold:#DAB252; --gold-hover:#e4c068; --gold-ink:#7a5b0f; --gold-soft:#f8f0dc; --gold-line:#ead7a4;
+  --paper:#f3f5f9; --surface:#ffffff; --surface-2:#edf1f6;
+  --fg:#16243b; --muted:#5a6679; --line:#dae0e9; --line-2:#c5cfdc;
+  --algae:#2e8a5a; --axt:#c4421b; --axt-soft:#f8e2d9;
+  --ok:#2e8a5a; --ok-bg:#e2f2e8; --warn:#956705; --warn-bg:#fbf0d4; --crit:#b3261e; --crit-bg:#f8dfdc;
+  --grey:#8a95a7;
+  --font:"Barlow",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--fg);font-family:var(--font);font-weight:500;font-size:16px;line-height:1.55}
+[hidden]{display:none!important}
+img,svg{max-width:100%}
+h1,h2,h3{margin:0;color:var(--navy);font-weight:700;line-height:1.2;text-wrap:balance}
+h2{font-size:1.65rem;letter-spacing:-.005em}
+h3{font-size:1.1rem;font-weight:600}
+p{margin:0}
+a{color:var(--royal);text-underline-offset:3px}
+.num,td.n,.kpi .k-v,.metric .v{font-variant-numeric:tabular-nums lining-nums}
+.wrap{max-width:1200px;margin:0 auto;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+:focus-visible{outline:3px solid var(--royal);outline-offset:2px}
+
+/* ---------- header ---------- */
+.top{position:sticky;top:0;z-index:30;background:var(--surface);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top,0px)}
+.top-in{display:flex;align-items:center;gap:20px;min-height:70px}
+.brand{all:unset;cursor:pointer;display:flex;align-items:center;gap:12px;flex:none}
+.brand svg{height:40px;width:auto;display:block}
+.brand-name{font-weight:700;font-size:1.12rem;letter-spacing:.08em;color:var(--navy);line-height:1.1}
+.brand-sub{font-size:.8rem;color:var(--muted);line-height:1.25}
+.tabs{display:flex;gap:2px;margin-left:auto;overflow-x:auto;scrollbar-width:none;align-self:stretch}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{all:unset;cursor:pointer;display:flex;align-items:center;padding:0 12px;font-weight:600;font-size:.95rem;color:var(--muted);white-space:nowrap;box-shadow:inset 0 -3px 0 transparent}
+.tabs button:hover{color:var(--navy)}
+.tabs button[aria-selected="true"]{color:var(--navy);box-shadow:inset 0 -3px 0 var(--gold)}
+.tabs button:focus-visible{outline:3px solid var(--royal);outline-offset:-3px}
+.top .cta-top{flex:none}
+.ctx{background:var(--surface-2);border-bottom:1px solid var(--line)}
+.ctx-in{display:flex;flex-wrap:wrap;gap:6px 26px;align-items:center;min-height:42px;font-size:.88rem;color:var(--muted);padding-block:6px}
+.ctx-in b{color:var(--fg);font-weight:600}
+
+main.wrap{padding-top:30px;padding-bottom:72px}
+.tab{display:flex;flex-direction:column;gap:30px}
+.sec-head{display:flex;flex-direction:column;gap:8px;max-width:68ch}
+.sec-head p{color:var(--muted);font-size:1.04rem}
+
+/* ---------- buttons, pills ---------- */
+.btn{font:inherit;font-weight:600;font-size:.95rem;line-height:1.2;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:8px;padding:11px 18px;border:1px solid var(--line-2);background:var(--surface);color:var(--navy);text-decoration:none;text-align:center}
+.btn:hover{border-color:var(--navy)}
+.btn.primary{background:var(--gold);border-color:var(--gold);color:var(--navy)}
+.btn.primary:hover{background:var(--gold-hover);border-color:var(--gold-hover)}
+.btn.on-dark{background:transparent;color:#fff;border-color:rgba(255,255,255,.5)}
+.btn.on-dark:hover{border-color:#fff}
+.btn.sm{padding:7px 12px;font-size:.86rem}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.link{all:unset;cursor:pointer;color:var(--royal);font-weight:600;text-decoration:underline;text-underline-offset:3px}
+.link:focus-visible{outline:3px solid var(--royal);outline-offset:2px}
+.pill{display:inline-flex;align-items:center;gap:7px;font-weight:600;padding:3px 11px;border-radius:999px;font-size:.84rem;white-space:nowrap}
+.pill::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor;flex:none}
+.p-green{background:var(--ok-bg);color:var(--ok)}
+.p-yellow{background:var(--warn-bg);color:var(--warn)}
+.p-red{background:var(--crit-bg);color:var(--crit)}
+.p-info{background:var(--surface-2);color:var(--muted)}
+.tag{display:inline-block;font-size:.74rem;line-height:1;padding:4px 7px;border-radius:4px;font-weight:600;vertical-align:middle;white-space:nowrap}
+.t-model{background:var(--surface-2);color:var(--muted)}
+.t-data{background:var(--ok-bg);color:var(--ok)}
+.t-assume{background:var(--gold-soft);color:var(--gold-ink)}
+.note{font-size:.86rem;color:var(--muted)}
+
+/* ---------- overview ---------- */
+.hero{background:var(--navy);color:#fff;border-radius:18px;display:grid;grid-template-columns:minmax(0,1.12fr) minmax(0,1fr);gap:28px;align-items:center;padding:46px 36px 40px 48px;overflow:hidden}
+.hero h1{color:#fff;font-size:clamp(2.1rem,1.2rem + 2.3vw,3rem);line-height:1.06;letter-spacing:-.012em;max-width:17ch}
+.hero .lede{font-size:1.14rem;line-height:1.55;color:#d3deee;max-width:44ch;margin-top:18px}
+.hero .cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px}
+.hero-art{margin:0;min-width:0}
+.hero-art svg{width:100%;height:auto;display:block}
+
+.plan{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:26px 28px 24px;display:flex;flex-direction:column;gap:22px}
+.plan-head{display:flex;justify-content:space-between;align-items:flex-end;gap:10px 24px;flex-wrap:wrap}
+.plan-head p{color:var(--muted);max-width:62ch;margin-top:6px}
+.process{display:grid;grid-template-columns:minmax(0,1.2fr) auto minmax(0,1.35fr) auto minmax(0,.95fr);align-items:start}
+.stage,.decision{position:relative;min-width:0}
+.stage::before,.decision::before{content:"";position:absolute;left:0;right:0;top:15px;height:6px}
+.stage{padding-top:38px;padding-right:18px}
+.s-green::before{background:var(--algae);border-radius:3px 0 0 3px}
+.s-red::before{background:var(--axt)}
+.s-grey::before{background:var(--grey);border-radius:0 3px 3px 0}
+.d-transfer::before{background:linear-gradient(90deg,var(--algae) 50%,var(--axt) 50%)}
+.d-harvest::before{background:linear-gradient(90deg,var(--axt) 50%,var(--grey) 50%)}
+.stage b{display:block;color:var(--navy);font-weight:700;font-size:1.02rem}
+.stage span{display:block;color:var(--muted);font-size:.9rem;max-width:30ch;margin-top:2px}
+.decision{display:flex;flex-direction:column;align-items:center;padding:0 22px;text-align:center}
+.decision svg{position:relative;width:30px;height:auto;display:block;margin-top:3px}
+.decision .d-l{font-size:.86rem;color:var(--muted);margin-top:6px}
+.decision .d-v{font-size:1.65rem;font-weight:700;color:var(--navy);line-height:1.1;font-variant-numeric:tabular-nums}
+.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:1px solid var(--line);padding-top:18px}
+.metric{padding:0 20px;border-left:1px solid var(--line);min-width:0;display:flex;flex-direction:column;gap:2px}
+.metric:first-child{padding-left:0;border-left:0}
+.metric .v{font-size:1.6rem;font-weight:600;color:var(--navy);line-height:1.2}
+.metric .v small{font-size:.9rem;font-weight:500;color:var(--muted);margin-left:4px}
+.metric .l{font-size:.88rem;color:var(--muted)}
+
+.qa{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+.qa article{padding:2px 28px 2px 0;display:flex;flex-direction:column;gap:8px}
+.qa article+article{padding-left:28px;border-left:1px solid var(--line-2)}
+.qa h3{font-size:1.18rem;font-weight:700}
+.qa p{color:var(--muted)}
+.qa .link{margin-top:4px;align-self:flex-start}
+.caps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:26px 44px}
+.cap{display:grid;grid-template-columns:26px minmax(0,1fr);gap:14px;align-items:start}
+.cap svg{width:22px;height:auto;margin-top:3px}
+.cap h3{margin-bottom:4px}
+.cap p{color:var(--muted)}
+.band{display:flex;justify-content:space-between;align-items:center;gap:18px 28px;flex-wrap:wrap;background:var(--gold-soft);border:1px solid var(--gold-line);border-radius:16px;padding:26px 30px}
+.band h2{font-size:1.45rem}
+.band p{color:var(--fg);margin-top:6px;max-width:60ch}
+
+/* ---------- tool layout ---------- */
+.panel,.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;min-width:0}
+.panel{padding:16px 18px;display:flex;flex-direction:column;gap:14px}
+.card{padding:18px 20px;display:flex;flex-direction:column;gap:12px}
+.card-h{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.sim-grid{display:grid;grid-template-columns:300px minmax(0,1fr);gap:20px;align-items:start}
+.data-grid{display:grid;grid-template-columns:340px minmax(0,1fr);gap:20px;align-items:start}
+.econ-grid{display:grid;grid-template-columns:330px minmax(0,1fr);gap:20px;align-items:start}
+.rob-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:20px;align-items:start}
+.controls{position:sticky;top:124px;max-height:calc(100vh - 140px);overflow:auto}
+.out{display:flex;flex-direction:column;gap:16px;min-width:0}
+.fgroup{display:flex;flex-direction:column;gap:10px;border-top:1px solid var(--line);padding-top:12px}
+.fgroup:first-child{border-top:0;padding-top:0}
+.glabel{font-size:.92rem;font-weight:700;color:var(--navy)}
+.more{border-top:1px solid var(--line);padding-top:12px;display:flex;flex-direction:column}
+.more>summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;font-weight:700;color:var(--navy);font-size:1rem;padding:2px 0}
+.more>summary::-webkit-details-marker{display:none}
+.more>summary::after{content:"";width:8px;height:8px;border-right:2px solid var(--navy);border-bottom:2px solid var(--navy);transform:translateY(-2px) rotate(45deg);margin-right:6px}
+.more[open]>summary::after{transform:translateY(2px) rotate(-135deg)}
+.more>.fgroup{margin-top:12px}
+.field{display:grid;grid-template-columns:minmax(0,1fr) 108px;gap:10px;align-items:center;font-size:.9rem}
+.field label{min-width:0;line-height:1.3}
+.field label small{display:block;color:var(--muted);font-size:.78rem;line-height:1.3}
+#mapFields .field{grid-template-columns:minmax(0,1fr) 150px}
+.field.stack{grid-template-columns:1fr;gap:6px}
+input[type=number],input[type=text],select,textarea{font:inherit;font-weight:500;font-size:.9rem;background:var(--surface);color:var(--fg);border:1px solid var(--line-2);border-radius:7px;padding:6px 8px;width:100%;min-width:0}
+input[type=number]{font-variant-numeric:tabular-nums}
+input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--royal);outline-offset:0;border-color:var(--royal)}
+input:disabled,select:disabled{background:var(--surface-2);color:var(--muted)}
+input[type=range]{width:100%;accent-color:var(--navy)}
+.range-row{display:flex;justify-content:space-between;align-items:baseline;font-size:.92rem}
+.range-row output{font-weight:700;color:var(--navy);font-size:1.1rem;font-variant-numeric:tabular-nums}
+textarea{font-size:.82rem;min-height:120px;resize:vertical;font-variant-numeric:tabular-nums}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+.three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
+.rec{border-radius:12px;padding:16px 20px;border:1px solid var(--line);background:var(--surface);display:flex;flex-direction:column;gap:6px}
+.rec.lv-green{border-left:6px solid var(--ok)}
+.rec.lv-yellow{border-left:6px solid var(--warn);background:var(--warn-bg)}
+.rec.lv-red{border-left:6px solid var(--crit);background:var(--crit-bg)}
+.rec .r-h{font-size:1.3rem;font-weight:700;color:var(--navy);line-height:1.25}
+.rec .r-s{font-size:.95rem;color:var(--muted)}
+.rec .r-s b{color:var(--fg);font-weight:600}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.kpis.k3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.kpi .k-l{font-size:.86rem;color:var(--muted)}
+.kpi .k-v{font-size:1.5rem;font-weight:600;color:var(--navy);line-height:1.25}
+.kpi .k-u{font-size:.8rem;color:var(--muted)}
+.kpi.hl{border-color:var(--axt);box-shadow:inset 0 3px 0 var(--axt)}
+
+/* ---------- charts ---------- */
+.chart-wrap{position:relative}
+.chart-wrap svg{width:100%;height:auto;display:block;overflow:visible}
+svg .grid{stroke:var(--line);stroke-width:1}
+svg .axis{stroke:var(--grey);stroke-width:1}
+svg .ax{fill:var(--muted);font-size:11.5px;font-family:var(--font);font-weight:500;font-variant-numeric:tabular-nums}
+svg .ax-l{fill:var(--muted);font-size:11.5px;font-family:var(--font);font-weight:600}
+svg .hov{stroke:var(--grey);stroke-width:1}
+.tip{position:absolute;top:6px;pointer-events:none;background:var(--surface);border:1px solid var(--line-2);border-radius:7px;padding:7px 9px;font-size:.8rem;box-shadow:0 6px 18px rgba(7,41,87,.14);white-space:nowrap;z-index:2;font-variant-numeric:tabular-nums}
+.legend{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:.82rem;color:var(--muted);margin-top:6px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{display:inline-block;width:18px;height:3px;border-radius:2px}
+.legend i.pt{width:10px;height:10px;border-radius:50%;border:2px solid;background:transparent!important}
+.legend i.bd{height:10px;opacity:.3}
+.legend i.sh{height:10px;opacity:.14}
+.empty{padding:30px 12px;text-align:center;color:var(--muted);font-size:.9rem;border:1px dashed var(--line-2);border-radius:9px}
+.disabled-overlay{position:relative}
+.disabled-overlay::after{content:attr(data-msg);position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:20px;background:rgba(255,255,255,.86);color:var(--crit);font-weight:600;border-radius:8px}
+
+/* ---------- tables ---------- */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:9px}
+table{border-collapse:collapse;width:100%;font-size:.88rem}
+th,td{text-align:left;padding:8px 11px;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--surface-2);font-weight:600;color:var(--muted);font-size:.82rem;white-space:nowrap}
+tr:last-child td{border-bottom:0}
+td.n{text-align:right;white-space:nowrap}
+td.strong{font-weight:600;color:var(--navy)}
+.lv{font-weight:700;font-size:.82rem;white-space:nowrap}
+.lv.green{color:var(--ok)}.lv.yellow{color:var(--warn)}.lv.red{color:var(--crit)}.lv.info{color:var(--muted)}
+
+/* ---------- safeguards ---------- */
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chipbtn{font:inherit;font-weight:600;font-size:.9rem;cursor:pointer;border:1px solid var(--line-2);background:var(--surface);color:var(--navy);padding:7px 14px;border-radius:999px}
+.chipbtn:hover{border-color:var(--navy)}
+.chipbtn[aria-pressed="true"]{background:var(--navy);color:#fff;border-color:var(--navy)}
+.toggles{display:flex;flex-wrap:wrap;gap:12px 26px;font-size:.92rem;align-items:center}
+.toggles label{display:inline-flex;gap:8px;align-items:center}
+.toggles input[type=checkbox]{width:17px;height:17px;accent-color:var(--navy)}
+.gate-big{display:flex;align-items:center;gap:10px 14px;flex-wrap:wrap}
+.gate-big .pill{font-size:1rem;padding:6px 14px}
+ul.clean{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+ul.clean li::marker{color:var(--grey)}
+.issues{display:flex;flex-direction:column;gap:5px;max-height:240px;overflow:auto;font-size:.86rem}
+.issues div{display:grid;grid-template-columns:70px 70px minmax(0,1fr);gap:8px}
+
+/* ---------- pilot ---------- */
+.timeline{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:0}
+.timeline li{position:relative;padding:40px 18px 0 0;min-width:0}
+.timeline li::before{content:"";position:absolute;left:0;right:0;top:15px;height:4px;background:var(--line-2)}
+.timeline li:first-child::before{border-radius:2px 0 0 2px}
+.timeline li:last-child::before{background:var(--gold);border-radius:0 2px 2px 0}
+.timeline li svg{position:absolute;left:0;top:3px;width:26px;height:auto}
+.timeline .wk{display:block;font-size:.86rem;font-weight:600;color:var(--gold-ink)}
+.timeline b{display:block;color:var(--navy);font-size:1.05rem;margin:2px 0 4px}
+.timeline span{display:block;color:var(--muted);font-size:.9rem}
+.pilot-grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:20px;align-items:start}
+.measures{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.measure{border-top:3px solid var(--navy);padding-top:10px}
+.measure b{display:block;color:var(--navy)}
+.measure span{font-size:.9rem;color:var(--muted)}
+.contact{background:var(--navy);color:#fff;border-radius:14px;padding:24px 26px;display:flex;flex-direction:column;gap:12px}
+.contact h3{color:#fff;font-size:1.3rem}
+.contact p{color:#d3deee}
+.contact .row{margin-top:4px}
+
+footer{border-top:1px solid var(--line);background:var(--surface)}
+.foot-in{display:flex;flex-wrap:wrap;gap:8px 28px;justify-content:space-between;align-items:center;padding-block:22px;font-size:.86rem;color:var(--muted)}
+.foot-in b{color:var(--navy);letter-spacing:.06em}
+
+@media (max-width:1060px){
+  .top-in{flex-wrap:wrap;gap:0 16px;padding-top:10px}
+  .tabs{order:3;width:100%;margin-left:0;height:48px;margin-top:4px}
+  .tabs button{padding:0 10px}
+  .top .cta-top{margin-left:auto}
+  .controls{top:auto;position:static;max-height:none}
+}
+@media (max-width:980px){
+  .hero{grid-template-columns:1fr;padding:32px 24px 26px}
+  .hero-art{max-width:560px}
+  .sim-grid,.data-grid,.econ-grid,.rob-grid,.pilot-grid{grid-template-columns:1fr}
+  .process{grid-template-columns:1fr;gap:0}
+  .stage,.decision{padding:0 0 18px 30px;text-align:left;align-items:flex-start}
+  .stage::before,.decision::before{left:9px;right:auto;top:0;bottom:0;width:6px;height:auto}
+  .s-green::before{border-radius:3px 3px 0 0}.s-grey::before{border-radius:0 0 3px 3px}
+  .d-transfer::before{background:linear-gradient(180deg,var(--algae) 50%,var(--axt) 50%)}
+  .d-harvest::before{background:linear-gradient(180deg,var(--axt) 50%,var(--grey) 50%)}
+  .decision{flex-direction:row;flex-wrap:wrap;gap:4px 12px;align-items:center}
+  .decision svg{position:absolute;left:-2px;top:2px;margin:0}
+  .decision .d-l{margin:0}
+  .metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 0}
+  .metric:nth-child(3){padding-left:0;border-left:0}
+  .qa{grid-template-columns:1fr;gap:22px}
+  .qa article,.qa article+article{padding:0;border-left:0}
+  .caps{grid-template-columns:1fr}
+  .two,.three{grid-template-columns:1fr}
+  .timeline{grid-template-columns:1fr}
+  .timeline li{padding:0 0 22px 40px}
+  .timeline li::before{left:11px;right:auto;top:0;bottom:0;width:4px;height:auto}
+  .timeline li:last-child::before{border-radius:0 0 2px 2px}
+  .timeline li svg{top:0}
+  .measures{grid-template-columns:1fr}
+}
+@media (max-width:640px){
+  body{font-size:15.5px}
+  .brand svg{height:34px}
+  .brand-sub{display:none}
+  .top .cta-top{padding:8px 12px;font-size:.88rem}
+  .kpis.k3{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .plan{padding:20px 18px}
+  .band{padding:22px 20px}
+  .field{grid-template-columns:minmax(0,1fr) 96px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap top-in">
+  <button class="brand" type="button" data-go="overview" aria-label="LUMIVERSION, back to overview">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 215.47" aria-hidden="true" focusable="false">
+<path fill="#072957" d="M0,57.735 45,62.735 45,131.754 100,163.509 100,215.47 0,157.735Z M100,0 200,57.735 200,146.47 100,88.735Z M100,0 100,30.981 98.701,31.731 98.701,0.75Z M0,57.735 45,62.735 46.299,61.985 1.299,56.985Z M100,163.509 100,215.47 101.299,214.72 101.299,162.759Z M164.756,126.122 200,146.47 200,147.97 163.457,126.872Z"/>
+<polygon fill="#134E96" points="100,0 100,30.981 45,62.735 0,57.735"/>
+<polygon fill="#DAB252" points="100,163.509 164.756,126.122 200,146.47 200,157.735 100,215.47"/>
+</svg>
+    <span><span class="brand-name">LUMIVERSION</span><span class="brand-sub" style="display:block">Astaxanthin Decision Studio</span></span>
+  </button>
+  <nav class="tabs" role="tablist" aria-label="Sections">
+    <button role="tab" data-tab="overview" aria-selected="true">Overview</button>
+    <button role="tab" data-tab="planner" aria-selected="false">Batch planner</button>
+    <button role="tab" data-tab="safeguards" aria-selected="false">Safeguards</button>
+    <button role="tab" data-tab="data" aria-selected="false">Your data</button>
+    <button role="tab" data-tab="business" aria-selected="false">Business case</button>
+    <button role="tab" data-tab="pilot" aria-selected="false">Pilot</button>
+  </nav>
+  <button class="btn primary cta-top" type="button" data-go="pilot">Start a pilot</button>
+</div></header>
+<div class="ctx"><div class="wrap ctx-in" aria-live="polite">
+  <span>Data: <b id="ctxData">Example settings</b></span>
+  <span>Conditions: <b id="ctxScn">Normal</b></span>
+  <span id="ctxGate" class="pill p-green">Clear to optimise</span>
+</div></div>
+
+<main class="wrap">
+
+<!-- ================= OVERVIEW ================= -->
+<section class="tab" id="tab-overview" role="tabpanel" aria-label="Overview">
+  <div class="hero">
+    <div>
+      <h1>Get more astaxanthin from every reactor-day</h1>
+      <p class="lede">LUMIVERSION turns the cultivation records you already keep into clear decisions: when to move cultures from green to red, when to harvest, and when to hold back. No new hardware is needed to start.</p>
+      <div class="cta">
+        <button class="btn primary" type="button" data-go="planner">Open the batch planner</button>
+        <button class="btn on-dark" type="button" data-go="data">Try it with your data</button>
+      </div>
+    </div>
+    <figure class="hero-art" aria-hidden="true"><svg id="heroArt" viewBox="0 0 560 400"></svg></figure>
+  </div>
+
+  <section class="plan" aria-labelledby="planTitle">
+    <div class="plan-head">
+      <div>
+        <h2 id="planTitle">Recommended plan</h2>
+        <p>Live from the batch planner, using example settings. In a pilot, the model is calibrated to your strain, reactors and site.</p>
+      </div>
+      <button class="btn sm" type="button" data-go="planner">Adjust settings</button>
+    </div>
+    <div class="process">
+      <div class="stage s-green"><b>Green growth</b><span>Cells multiply under moderate light.</span></div>
+      <div class="decision d-transfer"><svg viewBox="-14 -14 228 243.47" aria-hidden="true" focusable="false"><polygon points="100,0 200,57.735 200,157.735 100,215.47 0,157.735 0,57.735" fill="#DAB252" stroke="#ffffff" stroke-width="26" stroke-linejoin="round" paint-order="stroke"/></svg><span class="d-l">Transfer</span><span class="d-v" id="ovTs">—</span></div>
+      <div class="stage s-red"><b>Red induction</b><span>High light and nutrient stress turn cells red as astaxanthin builds up.</span></div>
+      <div class="decision d-harvest"><svg viewBox="-14 -14 228 243.47" aria-hidden="true" focusable="false"><polygon points="100,0 200,57.735 200,157.735 100,215.47 0,157.735 0,57.735" fill="#DAB252" stroke="#ffffff" stroke-width="26" stroke-linejoin="round" paint-order="stroke"/></svg><span class="d-l">Harvest</span><span class="d-v" id="ovH">—</span></div>
+      <div class="stage s-grey"><b>Extraction</b><span>Cells are cracked, dried and extracted.</span></div>
+    </div>
+    <div class="metrics">
+      <div class="metric"><span class="v" id="ovProd">—</span><span class="l">Whole-cycle productivity (mg/L/d)</span></div>
+      <div class="metric"><span class="v" id="ovConc">—</span><span class="l">Astaxanthin at harvest (mg/L)</span></div>
+      <div class="metric"><span class="v" id="ovContent">—</span><span class="l">Astaxanthin content (% of dry weight)</span></div>
+      <div class="metric"><span class="v" id="ovGate"><span class="pill p-green">Clear to optimise</span></span><span class="l" id="ovGateWhy">Safeguard status</span></div>
+    </div>
+  </section>
+
+  <section class="tab" aria-labelledby="qaTitle" style="gap:20px">
+    <h2 id="qaTitle">What it answers</h2>
+    <div class="qa">
+      <article><h3>Is it time to move to red?</h3>
+        <p>More days in green build biomass but delay induction and tie up reactors. The planner scores every possible transfer day by output over the whole cycle, not by today's cell density.</p>
+        <button class="link" type="button" data-go="planner">See transfer timing</button></article>
+      <article><h3>Are more days in red worth it?</h3>
+        <p>Astaxanthin keeps rising, but each extra day holds the reactor. The best harvest day is where the daily gain falls below the batch average, shown with a likely range.</p>
+        <button class="link" type="button" data-go="planner">See harvest timing</button></article>
+      <article><h3>Can I trust the advice when conditions change?</h3>
+        <p>Heatwaves, dull weeks, missed measurements, equipment faults or contamination switch the system to conservative advice, or hand the decision back to your operators.</p>
+        <button class="link" type="button" data-go="safeguards">See the safeguards</button></article>
+    </div>
+  </section>
+
+  <section class="tab" aria-labelledby="capTitle" style="gap:22px">
+    <h2 id="capTitle">Built for production teams</h2>
+    <div class="caps">
+      <div class="cap"><svg viewBox="-12 -12 224 239.47" aria-hidden="true" focusable="false"><polygon points="100,0 200,57.735 200,157.735 100,215.47 0,157.735 0,57.735" fill="none" stroke="#134E96" stroke-width="22" stroke-linejoin="round"/></svg><div><h3>Works with the records you already keep</h3><p>Upload a spreadsheet export of biomass and astaxanthin measurements. Columns are matched automatically and unit errors are flagged before anything is calculated.</p></div></div>
+      <div class="cap"><svg viewBox="-12 -12 224 239.47" aria-hidden="true" focusable="false"><polygon points="100,0 200,57.735 200,157.735 100,215.47 0,157.735 0,57.735" fill="none" stroke="#134E96" stroke-width="22" stroke-linejoin="round"/></svg><div><h3>Explains every recommendation</h3><p>Growth and pigment curves, the recommended day and the likely range sit side by side, so your team can see why a day was chosen.</p></div></div>
+      <div class="cap"><svg viewBox="-12 -12 224 239.47" aria-hidden="true" focusable="false"><polygon points="100,0 200,57.735 200,157.735 100,215.47 0,157.735 0,57.735" fill="none" stroke="#134E96" stroke-width="22" stroke-linejoin="round"/></svg><div><h3>Knows when not to optimise</h3><p>Safeguards pause optimisation when inputs can't be trusted, and every change in status is written to a decision log you can export.</p></div></div>
+      <div class="cap"><svg viewBox="-12 -12 224 239.47" aria-hidden="true" focusable="false"><polygon points="100,0 200,57.735 200,157.735 100,215.47 0,157.735 0,57.735" fill="none" stroke="#134E96" stroke-width="22" stroke-linejoin="round"/></svg><div><h3>Puts a value on better timing</h3><p>Translate a new schedule into annual output, cost per kilogram and profit for your own reactor volumes, costs and prices.</p></div></div>
+    </div>
+  </section>
+
+  <div class="band">
+    <div><h2>See it on your own batches</h2>
+      <p>A 16-week pilot runs alongside your current practice, then calibrates and tests the model before anything changes in production.</p></div>
+    <button class="btn primary" type="button" data-go="pilot">Plan a pilot</button>
+  </div>
+</section>
+
+<!-- ================= BATCH PLANNER ================= -->
+<section class="tab" id="tab-planner" role="tabpanel" aria-label="Batch planner" hidden>
+  <div class="sec-head"><h2>Batch planner</h2>
+    <p>Set your process conditions. The planner recommends when to transfer and when to harvest, and shows how confident it is.</p></div>
+  <div class="sim-grid">
+    <form class="panel controls" id="simForm" autocomplete="off">
+      <div class="fgroup"><div class="glabel">Decision</div>
+        <div class="range-row"><label for="f_ts">Transfer day</label><output id="o_ts">10</output></div>
+        <input type="range" id="f_ts" min="4" max="20" step="1" value="10">
+        <button type="button" class="btn sm" id="btnBestTs">Use the best transfer day</button>
+      </div>
+      <details class="more" id="moreSettings" open><summary>Process settings</summary>
+      <div class="fgroup"><div class="glabel">Reactor set-up</div>
+        <div class="field stack"><label for="f_mode">Green and red phases</label>
+          <select id="f_mode"><option value="sep">Separate green and red reactors</option><option value="same">Same reactor for both phases</option></select></div>
+        <div class="field"><label for="f_D">Dilution at transfer <small>Red-phase density ÷ end-of-green density (1 = none)</small></label><input type="number" id="f_D" value="1" min="0.2" max="1" step="0.05"></div>
+      </div>
+      <div class="fgroup"><div class="glabel">Light</div>
+        <div class="field"><label for="f_L">Light path <small>cm</small></label><input type="number" id="f_L" value="5" min="1" max="30" step="0.5"></div>
+        <div class="field"><label for="f_Ig">Green phase light <small>µmol/m²/s</small></label><input type="number" id="f_Ig" value="150" min="10" max="1500" step="10"></div>
+        <div class="field"><label for="f_Ir">Red phase light <small>µmol/m²/s</small></label><input type="number" id="f_Ir" value="800" min="50" max="2500" step="50"></div>
+        <div class="field"><label for="f_photo">Light hours <small>per day</small></label><input type="number" id="f_photo" value="14" min="4" max="24" step="1"></div>
+      </div>
+      <div class="fgroup"><div class="glabel">Temperature</div>
+        <div class="field"><label for="f_Tg">Green phase <small>°C</small></label><input type="number" id="f_Tg" value="22" min="10" max="35" step="0.5"></div>
+        <div class="field"><label for="f_Tr">Red phase <small>°C</small></label><input type="number" id="f_Tr" value="25" min="10" max="35" step="0.5"></div>
+      </div>
+      <div class="fgroup"><div class="glabel">Start-up and turnaround</div>
+        <div class="field"><label for="f_X0">Inoculum <small>g/L dry weight</small></label><input type="number" id="f_X0" value="0.1" min="0.01" max="1" step="0.01"></div>
+        <div class="field"><label for="f_turnG">Green reactor turnaround <small>Cleaning and inoculation, days</small></label><input type="number" id="f_turnG" value="2" min="0" max="10" step="0.5"></div>
+        <div class="field"><label for="f_turnR">Red reactor turnaround <small>Harvest and cleaning, days</small></label><input type="number" id="f_turnR" value="2" min="0" max="10" step="0.5"></div>
+      </div>
+      <div class="fgroup"><div class="glabel">Strain</div>
+        <div class="field"><label for="f_qmax">Maximum astaxanthin content <small>mg/g dry weight</small></label><input type="number" id="f_qmax" value="35" min="10" max="70" step="1"></div>
+      </div>
+      </details>
+    </form>
+    <div class="out">
+      <div class="rec" id="simRec" aria-live="polite"></div>
+      <div class="kpis k3" id="simKpis"></div>
+      <div class="card"><div class="card-h"><h3>Whole-cycle productivity by harvest day</h3><span class="tag t-model">Model estimate</span></div>
+        <div id="chProd"></div>
+        <p class="note">Whole-cycle productivity counts every reactor-day in the batch, including turnaround and any dilution at transfer, so it reflects what the plant actually produces per year.</p></div>
+      <div class="two">
+        <div class="card"><div class="card-h"><h3>Biomass</h3><span class="tag t-model">Model estimate</span></div><div id="chX"></div></div>
+        <div class="card"><div class="card-h"><h3>Astaxanthin concentration</h3><span class="tag t-model">Model estimate</span></div><div id="chA"></div></div>
+      </div>
+      <div class="card"><div class="card-h"><h3>Decision map: transfer day and days in red</h3><span class="tag t-model">Model estimate</span></div>
+        <div id="chHeat"></div>
+        <p class="note">Darker cells mean higher whole-cycle productivity. Solid outline: best plan. Dashed row: the transfer day you selected. Hover over a cell for its value.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= SAFEGUARDS ================= -->
+<section class="tab" id="tab-safeguards" role="tabpanel" aria-label="Safeguards" hidden>
+  <div class="sec-head"><h2>Safeguards</h2>
+    <p>A recommendation is only as good as its inputs. The system checks conditions continuously and steps down to conservative advice, or hands the decision to your team, when it should. Try a scenario to see how it responds.</p></div>
+  <div class="card">
+    <h3>Choose a scenario</h3>
+    <div class="chips" id="scnChips"></div>
+    <div class="toggles">
+      <label for="f_gap">Days since last measurement <output id="o_gap" class="num" style="font-weight:700;color:var(--navy)">0</output></label>
+      <input type="range" id="f_gap" min="0" max="10" step="1" value="0" style="max-width:200px">
+      <label><input type="checkbox" id="f_offline"> Offline (cached weather)</label>
+      <label><input type="checkbox" id="f_fault"> Operator flag: equipment fault</label>
+      <label><input type="checkbox" id="f_contam"> Operator flag: suspected contamination</label>
+    </div>
+  </div>
+  <div class="rob-grid">
+    <div class="card">
+      <div class="gate-big"><span id="gateBig" class="pill p-green">Clear to optimise</span><span id="gateWhy" class="note"></span></div>
+      <div class="tbl-wrap"><table id="gateRules"></table></div>
+      <div id="gateActions"></div>
+      <p class="note">Equipment faults and contamination are raised by your operators; the system acts on the flag immediately.</p>
+    </div>
+    <div class="out">
+      <div class="card"><h3>Temperature in this scenario</h3><div id="chT"></div></div>
+      <div class="card"><h3>Light in this scenario</h3><div id="chI"></div></div>
+      <div class="card"><h3>Effect on the plan</h3><div id="robImpact"></div></div>
+    </div>
+  </div>
+  <div class="card"><div class="card-h"><h3>Decision log</h3><button class="btn sm" id="btnAudit" type="button">Download log (CSV)</button></div>
+    <div class="tbl-wrap"><table id="auditTbl"></table></div>
+    <p class="note">Every change in status is logged with the time, scenario, and the readings that triggered it.</p></div>
+</section>
+
+<!-- ================= YOUR DATA ================= -->
+<section class="tab" id="tab-data" role="tabpanel" aria-label="Your data" hidden>
+  <div class="sec-head"><h2>Your data</h2>
+    <p>Upload batch records as CSV. The system matches your columns, checks units and gaps, and estimates each batch's harvest window when there are enough measurements.</p>
+    <p class="note">Files are processed in your browser and are never uploaded.</p></div>
+  <div class="data-grid">
+    <div class="panel">
+      <div class="fgroup"><div class="glabel">Load data</div>
+        <label class="btn primary" for="fileIn">Choose a CSV file</label>
+        <input type="file" id="fileIn" accept=".csv,.txt,text/csv" hidden>
+        <div class="row">
+          <button class="btn sm" type="button" id="btnSampleA">Sample: two full batches</button>
+          <button class="btn sm" type="button" id="btnSampleB">Sample: one end-point only</button>
+          <button class="btn sm" type="button" id="btnSampleC">Sample: messy data</button>
+        </div>
+        <p class="note">Samples are synthetic data generated for this demo.</p>
+        <label for="csvText" class="note">Or paste CSV text</label>
+        <textarea id="csvText" placeholder="Batch_ID,Day,Biomass_g_L,AXT_mg_g_DW"></textarea>
+        <button class="btn" type="button" id="btnParse">Read pasted data</button>
+      </div>
+      <div class="fgroup" id="mapBox" hidden><div class="glabel">Match your columns</div><div id="mapFields" style="display:flex;flex-direction:column;gap:8px"></div>
+        <button class="btn primary" type="button" id="btnApplyMap">Apply and check</button></div>
+      <div class="fgroup"><div class="glabel">Productivity basis</div>
+        <div class="field"><label for="f_pre">Days before day 0 <small>e.g. seed scale-up</small></label><input type="number" id="f_pre" value="0" min="0" step="1"></div>
+        <div class="field"><label for="f_turn">Turnaround days <small>Cleaning, inoculation, harvest</small></label><input type="number" id="f_turn" value="2" min="0" step="0.5"></div>
+        <p class="note">Productivity = astaxanthin (mg/L) ÷ (day + days before day 0 + turnaround). Suits single-reactor batches; for separate green and red reactors, use the batch planner.</p>
+      </div>
+      <div class="fgroup"><div class="glabel">Data template</div>
+        <p class="note">The columns we use, with two example rows.</p>
+        <button class="btn sm" type="button" id="btnTpl">Download template (CSV)</button>
+      </div>
+    </div>
+    <div class="out">
+      <div class="card"><h3>Data check</h3><div id="dqReport"><div class="empty">No data loaded yet. Start with a sample or your own file.</div></div></div>
+      <div class="card">
+        <div class="card-h">
+          <div class="row"><label for="batchSel">Batch</label><select id="batchSel" style="width:auto;min-width:150px"></select></div>
+          <button class="btn primary" type="button" id="btnPredict" disabled>Estimate harvest window</button>
+        </div>
+        <p class="note" id="predReason"></p>
+        <div id="batchInfo"></div>
+        <div class="three">
+          <div><h3>Biomass</h3><div id="chDX"></div></div>
+          <div><h3>Astaxanthin content</h3><div id="chDQ"></div></div>
+          <div><h3>Whole-cycle productivity</h3><div id="chDP"></div></div>
+        </div>
+        <div id="predTable"></div>
+      </div>
+      <div class="card"><div class="card-h"><h3>Cleaned data</h3><button class="btn sm" type="button" id="btnClean" disabled>Download cleaned CSV</button></div>
+        <textarea id="cleanOut" readonly placeholder="Appears after the data check. Missing values stay blank; they are never replaced with zero."></textarea></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= BUSINESS CASE ================= -->
+<section class="tab" id="tab-business" role="tabpanel" aria-label="Business case" hidden>
+  <div class="sec-head"><h2>Business case</h2>
+    <p>Compare your current schedule with the optimised plan in annual output and profit. Every cost and price below is an editable assumption: replace them with your own figures.</p></div>
+  <div class="econ-grid">
+    <form class="panel" id="econForm" autocomplete="off">
+      <div class="fgroup"><div class="glabel">Reactors</div>
+        <div class="field"><label for="e_Vg">Green reactor volume <small>m³ in total</small></label><input type="number" id="e_Vg" value="40" min="0.1" step="1"></div>
+        <div class="field"><label for="e_Vr">Red reactor volume <small>m³ in total (combined if one reactor)</small></label><input type="number" id="e_Vr" value="60" min="0.1" step="1"></div>
+        <div class="field"><label for="e_days">Operating days <small>per year</small></label><input type="number" id="e_days" value="300" min="30" max="365" step="5"></div>
+      </div>
+      <div class="fgroup"><div class="glabel">Current practice</div>
+        <div class="field"><label for="e_tsCur">Transfer day</label><input type="number" id="e_tsCur" value="8" min="4" max="20" step="1"></div>
+        <div class="field"><label for="e_hCur">Harvest day <small>From inoculation</small></label><input type="number" id="e_hCur" value="32" min="8" max="44" step="1"></div>
+      </div>
+      <div class="fgroup"><div class="glabel">Recovery and price <span class="tag t-assume">Assumption</span></div>
+        <div class="field"><label for="e_rec">Downstream recovery <small>0 to 1</small></label><input type="number" id="e_rec" value="0.8" min="0" max="1" step="0.05"></div>
+        <div class="field"><label for="e_qual">Batch pass rate <small>0 to 1</small></label><input type="number" id="e_qual" value="0.9" min="0" max="1" step="0.05"></div>
+        <div class="field"><label for="e_price">Selling price <small>£ per kg astaxanthin</small></label><input type="number" id="e_price" value="2400" min="0" step="100"></div>
+      </div>
+      <div class="fgroup"><div class="glabel">Costs <span class="tag t-assume">Assumption</span></div>
+        <div class="field"><label for="e_occ">Reactor running cost <small>£ per m³ per day: power, CO₂, nutrients, labour</small></label><input type="number" id="e_occ" value="1.2" min="0" step="0.1"></div>
+        <div class="field"><label for="e_dsp">Downstream processing <small>£ per kg dry biomass</small></label><input type="number" id="e_dsp" value="12" min="0" step="1"></div>
+        <div class="field"><label for="e_fixed">Fixed costs <small>£ per year</small></label><input type="number" id="e_fixed" value="95000" min="0" step="5000"></div>
+      </div>
+    </form>
+    <div class="out">
+      <div class="card"><div class="card-h"><h3>Current practice vs optimised plan</h3><span class="tag t-model">Model estimate</span></div>
+        <div class="tbl-wrap"><table id="econTbl"></table></div>
+        <p class="note" id="econNote"></p>
+        <div class="row"><button class="btn" type="button" id="btnSaveScn">Save this scenario</button><button class="btn" type="button" id="btnEconCsv">Download comparison (CSV)</button></div>
+      </div>
+      <div class="card"><h3>Summary</h3><div id="econSummary" style="display:flex;flex-direction:column;gap:10px;max-width:72ch"></div></div>
+      <div class="card"><h3>Saved scenarios</h3><div class="tbl-wrap"><table id="savedTbl"></table></div>
+        <p class="note">Saved in this browser only.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= PILOT ================= -->
+<section class="tab" id="tab-pilot" role="tabpanel" aria-label="Pilot" hidden>
+  <div class="sec-head"><h2>Pilot programme</h2>
+    <p>We start in shadow mode alongside your current practice, then calibrate and test before any change to production. You decide at each step whether to continue.</p></div>
+  <ol class="timeline">
+    <li><svg viewBox="-14 -14 228 243.47" aria-hidden="true" focusable="false"><polygon points="100,0 200,57.735 200,157.735 100,215.47 0,157.735 0,57.735" fill="#DAB252" stroke="#ffffff" stroke-width="26" stroke-linejoin="round" paint-order="stroke"/></svg><span class="wk">Weeks 0–2</span><b>Data onboarding</b><span>Gather your SOP and batch records and map them to one template.</span></li>
+    <li><svg viewBox="-14 -14 228 243.47" aria-hidden="true" focusable="false"><polygon points="100,0 200,57.735 200,157.735 100,215.47 0,157.735 0,57.735" fill="#DAB252" stroke="#ffffff" stroke-width="26" stroke-linejoin="round" paint-order="stroke"/></svg><span class="wk">Weeks 2–6</span><b>Shadow mode</b><span>Run two or three batches as usual while the system makes recommendations in parallel.</span></li>
+    <li><svg viewBox="-14 -14 228 243.47" aria-hidden="true" focusable="false"><polygon points="100,0 200,57.735 200,157.735 100,215.47 0,157.735 0,57.735" fill="#DAB252" stroke="#ffffff" stroke-width="26" stroke-linejoin="round" paint-order="stroke"/></svg><span class="wk">Weeks 6–10</span><b>Calibration</b><span>Fit the model to your batches and report its accuracy on a batch it has not seen.</span></li>
+    <li><svg viewBox="-14 -14 228 243.47" aria-hidden="true" focusable="false"><polygon points="100,0 200,57.735 200,157.735 100,215.47 0,157.735 0,57.735" fill="#DAB252" stroke="#ffffff" stroke-width="26" stroke-linejoin="round" paint-order="stroke"/></svg><span class="wk">Weeks 10–16</span><b>Transfer-timing trial</b><span>Split one seed culture across three or four transfer days to confirm the model ranks them correctly.</span></li>
+    <li><svg viewBox="-14 -14 228 243.47" aria-hidden="true" focusable="false"><polygon points="100,0 200,57.735 200,157.735 100,215.47 0,157.735 0,57.735" fill="#DAB252" stroke="#ffffff" stroke-width="26" stroke-linejoin="round" paint-order="stroke"/></svg><span class="wk">Week 16 onwards</span><b>Controlled adoption</b><span>Follow recommendations when safeguards are clear; your operators decide otherwise.</span></li>
+  </ol>
+  <div class="card"><h3>How we judge success</h3>
+    <div class="measures">
+      <div class="measure"><b>Whole-cycle productivity</b><span>Astaxanthin per reactor-day, compared with your current schedule.</span></div>
+      <div class="measure"><b>Batch consistency</b><span>Less variation in harvest timing and pigment content between batches.</span></div>
+      <div class="measure"><b>Cost per kilogram</b><span>Production cost of saleable astaxanthin at your volumes and prices.</span></div>
+    </div></div>
+  <div class="pilot-grid">
+    <div class="card"><h3>What we need from you</h3>
+      <ul class="clean">
+        <li>One strain, your current SOP, and records from two or three recent batches</li>
+        <li>For each batch: inoculation, transfer and harvest dates, working volume and any dilution at transfer</li>
+        <li>Every one or two days: dry-weight biomass, or optical density calibrated to dry weight</li>
+        <li>Every two or three days: astaxanthin content, noting HPLC or spectrophotometry</li>
+        <li>Daily: mean and maximum temperature, light (PAR readings or weather irradiance) and microscopy notes</li>
+        <li>Events: shutdowns, feeding, contamination treatment and equipment faults, with dates</li>
+      </ul>
+      <div class="row"><button class="btn sm" type="button" id="btnTpl2">Download the data template</button></div>
+    </div>
+    <div class="contact" id="contactBox">
+      <h3>Talk to us about a pilot</h3>
+      <p id="contactText">Ask your LUMIVERSION contact for a pilot proposal tailored to your strain, reactors and site.</p>
+      <div class="row" id="contactRow" hidden><a class="btn primary" id="contactBtn" href="#">Email the team</a></div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer><div class="wrap foot-in">
+  <span><b>LUMIVERSION</b> &nbsp;© <span id="year">2026</span></span>
+  <span>Demonstration version. Figures are model estimates until calibrated on your production data.</span>
+</div></footer>
+
+<script>
+"use strict";
+/* LUMIVERSION · Astaxanthin Decision Studio (client demo). Runs entirely in the browser. */
+
+/* Contact shown on the Pilot page. Leave empty to show a generic message instead. */
+const CONTACT_EMAIL = '';
+
+/* ---------------- utilities ---------------- */
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const fmt=(v,d=2)=>(v==null||!isFinite(v))?'—':Number(v).toLocaleString('en-GB',{minimumFractionDigits:d,maximumFractionDigits:d});
+const money=(v,d=0)=>(v==null||!isFinite(v))?'—':(v<0?'−':'')+'£'+Math.abs(v).toLocaleString('en-GB',{minimumFractionDigits:d,maximumFractionDigits:d});
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const days=n=>n+(n===1?' day':' days');
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}}
+function gauss(r){let u=0,v=0;while(u===0)u=r();while(v===0)v=r();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+const pct=(arr,p)=>{const a=arr.filter(isFinite).slice().sort((x,y)=>x-y);if(!a.length)return NaN;const i=(a.length-1)*p,lo=Math.floor(i),hi=Math.ceil(i);return a[lo]+(a[hi]-a[lo])*(i-lo);};
+function download(name,text){try{const b=new Blob([text],{type:'text/csv;charset=utf-8'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),2000);}catch(e){}}
+const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}};
+const nowStr=()=>new Date().toLocaleString('en-GB',{hour12:false,day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit',second:'2-digit'});
+
+/* ---------------- model ---------------- */
+const P0={muMax:0.9,Xmax_g:1.6,KI:30,KiI:800,Ka:0.06,Tmin:4,Topt:24,Tmax:33,
+  muR:0.40,gain:2.2,kq:0.6,KIa:80,qmax:35,q0:1.0,TminA:5,ToptA:27,TmaxA:35,kd0:0.005};
+function ctmi(T,Tmin,Topt,Tmax){if(T<=Tmin||T>=Tmax)return 0;const n=(T-Tmax)*(T-Tmin)**2;const d=(Topt-Tmin)*((Topt-Tmin)*(T-Topt)-(Topt-Tmax)*(Topt+Tmin-2*T));return Math.max(0,Math.min(1,n/d));}
+function iavg(I0,X,L,Ka){const tau=Ka*X*1000*L;return tau<1e-6?I0:I0*(1-Math.exp(-tau))/tau;}
+function simulate(p,S,prof,ts,redDays){
+  const dt=0.05,phot=S.photo/24,Lm=S.L/100,D=S.mode==='same'?1:S.D;
+  let X=S.X0,q=p.q0,t=0,cum=0,Xs=null;
+  const out={X:[X],q:[q],A:[X*q],cum:[0],D,ts};
+  const steps=Math.round((ts+redDays)/dt);
+  for(let i=1;i<=steps;i++){
+    const red=t>=ts-1e-9;
+    if(red&&Xs===null){X*=D;Xs=X;}
+    const T=prof.T(t,red?'r':'g'),I0=(red?S.Ir:S.Ig)*prof.I(t),Ia=iavg(I0,X,Lm,p.Ka);
+    if(!red){
+      const mu=p.muMax*Ia/(p.KI+Ia+Ia*Ia/p.KiI)*ctmi(T,p.Tmin,p.Topt,p.Tmax)*phot;
+      const kd=p.kd0+(T>32?0.08*(T-32):0);
+      X+=dt*(mu*X*(1-X/p.Xmax_g)-kd*X);
+    }else{
+      const fI=Ia/(p.KIa+Ia),fT=ctmi(T,p.TminA,p.ToptA,p.TmaxA),kd=p.kd0+(T>32?0.08*(T-32):0);
+      X+=dt*(p.muR*fI*fT*phot*X*(1-X/(p.gain*Xs))-kd*X);
+      q+=dt*(p.kq*fI*fT*phot*(p.qmax-q));
+    }
+    X=Math.max(X,1e-6);
+    cum+=I0*phot*86400e-6*dt;
+    t=i*dt;
+    if(i%20===0){out.X.push(X);out.q.push(q);out.A.push(X*q);out.cum.push(cum);}
+  }
+  return out;
+}
+function prodAt(sim,S,ts,h){
+  const A=sim.A[h];if(A==null)return null;
+  if(S.mode==='same'){const occ=h+S.turnG;return{corr:A/occ,mass:A,occ};}
+  const D=sim.D,mass=A/D,occ=(ts+S.turnG)+(h-ts+S.turnR)/D;
+  return{corr:mass/occ,mass,occ};
+}
+const RMIN=2,RMAX=24,TSMIN=4,TSMAX=20;
+function gridSearch(p,S,prof){
+  const rows=[];let best={v:-1};
+  for(let ts=TSMIN;ts<=TSMAX;ts++){const sim=simulate(p,S,prof,ts,RMAX);const row=[];
+    for(let r=RMIN;r<=RMAX;r++){const v=prodAt(sim,S,ts,ts+r).corr;row.push(v);if(v>best.v)best={v,ts,r,h:ts+r};}
+    rows.push({ts,row});}
+  return{rows,best};
+}
+function monteCarlo(p,S,prof,ts,n){
+  const rnd=mulberry32(20261020),ln=s=>Math.exp(s*gauss(rnd)),sims=[];
+  for(let k=0;k<n;k++){const pp={...p,muMax:p.muMax*ln(.2),kq:p.kq*ln(.2),qmax:p.qmax*ln(.1),Ka:p.Ka*ln(.15),gain:p.gain*ln(.1),muR:p.muR*ln(.2),KIa:p.KIa*ln(.2)};sims.push(simulate(pp,S,prof,ts,RMAX));}
+  const H=[],P10=[],P50=[],P90=[];
+  for(let r=RMIN;r<=RMAX;r++){const h=ts+r;const v=sims.map(s=>prodAt(s,S,ts,h).corr);H.push(h);P10.push(pct(v,.1));P50.push(pct(v,.5));P90.push(pct(v,.9));}
+  const dd=[...Array(ts+RMAX+1).keys()],band=k=>({lo:dd.map(d=>pct(sims.map(s=>s[k][d]),.1)),hi:dd.map(d=>pct(sims.map(s=>s[k][d]),.9))});
+  const bestH=sims.map(s=>{let b=-1,bh=null;for(let r=RMIN;r<=RMAX;r++){const v=prodAt(s,S,ts,ts+r).corr;if(v>b){b=v;bh=ts+r;}}return bh;});
+  const i50=P50.indexOf(Math.max(...P50)),i10=P10.indexOf(Math.max(...P10));
+  const win=H.filter((h,i)=>P50[i]>=0.95*P50[i50]);
+  return{H,P10,P50,P90,days:dd,bX:band('X'),bA:band('A'),h50:H[i50],h10:H[i10],win:[win[0],win[win.length-1]],
+    hBest10:pct(bestH,.1),hBest90:pct(bestH,.9),spread:(P90[i50]-P10[i50])/P50[i50],pMax:P50[i50]};
+}
+
+/* ---------------- scenarios ---------------- */
+const SCN={
+  normal:{name:'Normal',flags:{gap:0,offline:false,fault:false,contam:false}},
+  heat:{name:'Heatwave',flags:{gap:0,offline:false,fault:false,contam:false},desc:'Culture at 33 °C on days 12–17'},
+  rain:{name:'Overcast spell',flags:{gap:0,offline:false,fault:false,contam:false},desc:'Light drops to 30% on days 9–16'},
+  gap:{name:'Missed measurements',flags:{gap:5,offline:false,fault:false,contam:false},desc:'No valid measurement for 5 days'},
+  offline:{name:'Offline',flags:{gap:0,offline:true,fault:false,contam:false},desc:'Weather outlook from a 36-hour-old cache'},
+  fault:{name:'Equipment fault',flags:{gap:1,offline:false,fault:true,contam:false},desc:'Operator flags an aeration or temperature-control fault'},
+  contam:{name:'Suspected contamination',flags:{gap:0,offline:false,fault:false,contam:true},desc:'Microscopy shows suspected protozoa'}
+};
+function buildProfile(scn,S){
+  const N=80,Tover=new Array(N).fill(null),If=new Array(N).fill(1);
+  if(scn==='heat')for(let d=12;d<=17;d++)Tover[d]=33;
+  if(scn==='rain')for(let d=9;d<=16;d++)If[d]=0.3;
+  const ix=t=>Math.min(N-1,Math.max(0,Math.floor(t+1e-9)));
+  return{T:(t,st)=>Tover[ix(t)]??(st==='g'?S.Tg:S.Tr),I:t=>If[ix(t)]};
+}
+
+/* ---------------- state ---------------- */
+const SAVE_KEY='lumiversion_scenarios_gbp_v1';
+const state={S:null,scn:'normal',flags:{...SCN.normal.flags},sim:null,grid:null,mc:null,gridNormal:null,mcNormal:null,gate:null,audit:[],lastSig:'',data:null,pending:null,saved:store.get(SAVE_KEY,[])};
+function readS(){
+  const g=id=>parseFloat($(id).value);
+  const S={mode:$('#f_mode').value,D:g('#f_D'),L:g('#f_L'),Ig:g('#f_Ig'),Ir:g('#f_Ir'),photo:g('#f_photo'),Tg:g('#f_Tg'),Tr:g('#f_Tr'),X0:g('#f_X0'),turnG:g('#f_turnG'),turnR:g('#f_turnR'),qmax:g('#f_qmax'),ts:parseInt($('#f_ts').value,10)};
+  const lim={D:[0.2,1],L:[1,30],Ig:[10,1500],Ir:[50,2500],photo:[4,24],Tg:[10,35],Tr:[10,35],X0:[0.01,1],turnG:[0,10],turnR:[0,10],qmax:[10,70]};
+  for(const k in lim){if(!isFinite(S[k]))S[k]=lim[k][0];S[k]=Math.min(lim[k][1],Math.max(lim[k][0],S[k]));}
+  $('#f_D').disabled=S.mode==='same';$('#f_turnR').disabled=S.mode==='same';
+  return S;
+}
+const params=S=>({...P0,qmax:S.qmax});
+
+/* ---------------- safeguards ---------------- */
+const LV_TXT={green:'Clear to optimise',yellow:'Conservative advice only',red:'Paused: operator decision',info:'Not assessed'};
+const LV_SHORT={green:'OK',yellow:'Caution',red:'Pause',info:'Not assessed'};
+function evaluateGate(){
+  const S=state.S,f=state.flags,prof=buildProfile(state.scn,S),rules=[];
+  const horizon=Math.min(79,(state.mc?state.mc.h50:S.ts+14)+2);
+  let maxT=-99,run=0,maxRun=0;for(let d=0;d<=horizon;d++){const T=prof.T(d,d>=S.ts?'r':'g');maxT=Math.max(maxT,T);run=T>=32?run+1:0;maxRun=Math.max(maxRun,run);}
+  let lowI=0;for(let d=S.ts;d<=horizon;d++)if(prof.I(d)<0.5)lowI++;
+  const add=(id,name,thr,obs,lv,reason,action)=>rules.push({id,name,thr,obs,lv,reason,action});
+  add('R1','Equipment fault','Operator flag raised: pause',f.fault?'Flagged':'None',f.fault?'red':'green','Equipment status can’t be trusted, so temperature, light and aeration inputs may be wrong','pause optimisation, inspect to SOP, then re-measure biomass and check by microscopy');
+  add('R2','Suspected contamination','Microscopy flag raised: pause',f.contam?'Flagged':'None',f.contam?'red':'green','Contamination changes how the culture behaves in ways the plan does not cover','pause optimisation, confirm by microscopy and follow your contamination SOP (early harvest or discard)');
+  add('R3','Measurement gap','2+ days: caution; over 4 days: pause',days(f.gap),f.gap>4?'red':f.gap>=2?'yellow':'green','There is no recent biomass or astaxanthin measurement, so the plan can’t be updated','measure dry weight and astaxanthin content; use the conservative plan until then');
+  add('R4','Temperature','29 °C or above: caution; 32 °C+ for 2 days: pause',`Peak ${fmt(maxT,1)} °C, ${days(maxRun)} at 32 °C+`,maxRun>=2?'red':maxT>=29?'yellow':'green','The culture is outside its tuned temperature range; heat suppresses astaxanthin build-up','start cooling or shading, and decide with your team whether to harvest early');
+  add('R5','Low light in red phase','Under 50% of plan for 3+ days: caution',days(lowI),lowI>=3?'yellow':'green','Astaxanthin builds up more slowly in low light, so the best day moves later and the range widens','hold the harvest decision and add one astaxanthin measurement');
+  const sp=state.mc?state.mc.spread:0;
+  add('R6','Forecast certainty','Range wider than 60% of the median: caution',fmt(sp*100,0)+'%',sp>0.6?'yellow':'green','The likely range is too wide to rank harvest days reliably','use the conservative day and add calibration data');
+  add('R7','Weather data age','Older than 24 hours: caution',f.offline?'36 h (cached)':'Up to date',f.offline?'yellow':'green','Calculations keep running offline, but the weather outlook is not refreshed','use on-site temperature and light records, and recalculate once back online');
+  const d=state.data;let dl='green',dobs='No data loaded';
+  if(d&&d.batches&&d.cur){const b=d.batches[d.cur];dobs=b.predOK?(b.pred&&b.pred.extrap?'Forecast beyond last measurement':'Enough for a forecast'):b.reason;dl=b.predOK?(b.pred&&b.pred.extrap?'yellow':'green'):'yellow';}
+  add('R8','Data coverage','4+ astaxanthin points over 6+ days',dobs,d?dl:'info','With too few measurements the system reports measured results only and does not forecast','complete the time series using the data template');
+  const order={info:0,green:1,yellow:2,red:3};
+  const lv=rules.reduce((a,r)=>order[r.lv]>order[a]?r.lv:a,'green');
+  state.gate={lv,rules,maxT,maxRun,lowI};
+  const sig=lv+'|'+rules.filter(r=>r.lv==='red'||r.lv==='yellow').map(r=>r.id).join(',')+'|'+state.scn;
+  if(sig!==state.lastSig){state.lastSig=sig;
+    state.audit.unshift({time:nowStr(),scn:SCN[state.scn].name,lv,rules:rules.filter(r=>r.lv==='red'||r.lv==='yellow').map(r=>r.name+' ('+r.obs+')').join('; ')||'None',ts:S.ts});
+    if(state.audit.length>60)state.audit.pop();}
+}
+
+/* ---------------- charts ---------------- */
+function niceStep(raw){const p=Math.pow(10,Math.floor(Math.log10(raw)));const f=raw/p;return(f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10)*p;}
+function ticks(lo,hi,n){if(!(hi>lo))hi=lo+1;const s=niceStep((hi-lo)/n);const a=[];for(let v=Math.floor(lo/s)*s;v<=hi+s*0.999;v+=s)a.push(+v.toFixed(10));return a;}
+const tickFmt=v=>Math.abs(v)>=1000?fmt(v,0):Math.abs(v)>=10?(+v.toFixed(1)).toString():(+v.toFixed(2)).toString();
+const fitW=(el,base,min)=>{const w=el.clientWidth;return w>0?Math.min(base,Math.max(min,Math.round(w))):base;};
+function lineChart(el,o){
+  const W=fitW(el,o.w||640,280),H=o.h||240,m={l:48,r:14,t:12,b:40};
+  const xs=[],ys=[];
+  (o.series||[]).forEach(s=>s.x.forEach((v,i)=>{if(s.y[i]!=null&&isFinite(s.y[i])){xs.push(v);ys.push(s.y[i]);}}));
+  (o.bands||[]).forEach(b=>b.x.forEach((v,i)=>{if(isFinite(b.hi[i])){xs.push(v);ys.push(b.hi[i],b.lo[i]);}}));
+  (o.points||[]).forEach(p=>{xs.push(p.x);ys.push(p.y);});
+  if(!xs.length){el.innerHTML='<div class="empty">'+(o.empty||'No data')+'</div>';return;}
+  const x0=o.xmin??Math.min(...xs),x1=o.xmax??Math.max(...xs);
+  const yt=ticks(o.ymin??0,Math.max(...ys)*1.05,4),y0=yt[0],y1=yt[yt.length-1];
+  const xt=ticks(x0,x1,o.xticks||6).filter(v=>v>=x0-1e-9&&v<=x1+1e-9);
+  const X=v=>m.l+(v-x0)/((x1-x0)||1)*(W-m.l-m.r),Y=v=>H-m.b-(v-y0)/((y1-y0)||1)*(H-m.t-m.b);
+  let g='';
+  (o.shade||[]).forEach(s=>{const a=Math.max(s.x0,x0),b=Math.min(s.x1,x1);if(b<=a)return;g+=`<rect x="${X(a)}" y="${m.t}" width="${X(b)-X(a)}" height="${H-m.t-m.b}" style="fill:${s.color};fill-opacity:${s.op||0.08}"/>`;if(s.label)g+=`<text x="${X(a)+5}" y="${s.pos==='bottom'?H-m.b-7:m.t+13}" class="ax-l">${s.label}</text>`;});
+  yt.forEach(v=>{g+=`<line x1="${m.l}" x2="${W-m.r}" y1="${Y(v)}" y2="${Y(v)}" class="grid"/><text x="${m.l-7}" y="${Y(v)+4}" text-anchor="end" class="ax">${tickFmt(v)}</text>`;});
+  xt.forEach(v=>{g+=`<text x="${X(v)}" y="${H-m.b+16}" text-anchor="middle" class="ax">${tickFmt(v)}</text>`;});
+  g+=`<line x1="${m.l}" x2="${W-m.r}" y1="${H-m.b}" y2="${H-m.b}" class="axis"/>`;
+  if(o.xLabel)g+=`<text x="${(m.l+W-m.r)/2}" y="${H-4}" text-anchor="middle" class="ax-l">${o.xLabel}</text>`;
+  if(o.yLabel){const cy=m.t+(H-m.t-m.b)/2;g+=`<text x="11" y="${cy}" transform="rotate(-90 11 ${cy})" text-anchor="middle" class="ax-l">${o.yLabel}</text>`;}
+  (o.bands||[]).forEach(b=>{const up=[],dn=[];b.x.forEach((v,i)=>{if(isFinite(b.hi[i])&&isFinite(b.lo[i])){up.push(`${X(v).toFixed(1)},${Y(b.hi[i]).toFixed(1)}`);dn.push(`${X(v).toFixed(1)},${Y(b.lo[i]).toFixed(1)}`);}});g+=`<polygon points="${up.concat(dn.reverse()).join(' ')}" style="fill:${b.color};fill-opacity:${b.op||0.16};stroke:none"/>`;});
+  (o.series||[]).forEach(s=>{let d='',pen=false;s.x.forEach((v,i)=>{const y=s.y[i];if(y==null||!isFinite(y)){pen=false;return;}d+=(pen?'L':'M')+X(v).toFixed(1)+','+Y(y).toFixed(1);pen=true;});g+=`<path d="${d}" style="fill:none;stroke:${s.color};stroke-width:${s.w||2.2};stroke-linejoin:round;${s.dash?'stroke-dasharray:'+s.dash:''}"/>`;});
+  (o.vlines||[]).forEach(v=>{if(v.x<x0||v.x>x1)return;g+=`<line x1="${X(v.x)}" x2="${X(v.x)}" y1="${m.t}" y2="${H-m.b}" style="stroke:${v.color||'var(--grey)'};stroke-dasharray:4 3;stroke-width:1.5"/>`;if(v.label)g+=`<text x="${X(v.x)+(v.anchor==='end'?-5:5)}" y="${m.t+(v.dy||28)}" text-anchor="${v.anchor||'start'}" class="ax-l" style="fill:${v.color||'var(--muted)'}">${v.label}</text>`;});
+  (o.points||[]).forEach(p=>{g+=`<circle cx="${X(p.x)}" cy="${Y(p.y)}" r="${p.r||3.8}" style="fill:${p.fill||'var(--surface)'};stroke:${p.color};stroke-width:2"/>`;});
+  (o.marks||[]).forEach(p=>{g+=`<circle cx="${X(p.x)}" cy="${Y(p.y)}" r="5.5" style="fill:${p.color};stroke:var(--surface);stroke-width:2"/>`;});
+  g+=`<line class="hov" x1="0" x2="0" y1="${m.t}" y2="${H-m.b}" visibility="hidden"/><rect x="${m.l}" y="${m.t}" width="${W-m.l-m.r}" height="${H-m.t-m.b}" style="fill:transparent"/>`;
+  let leg='';
+  (o.series||[]).filter(s=>s.name).forEach(s=>leg+=`<span><i style="background:${s.color}"></i>${s.name}</span>`);
+  (o.bands||[]).filter(b=>b.name).forEach(b=>leg+=`<span><i class="bd" style="background:${b.color}"></i>${b.name}</span>`);
+  (o.shade||[]).filter(s=>s.legend).forEach(s=>leg+=`<span><i class="sh" style="background:${s.color}"></i>${s.legend}</span>`);
+  if(o.pointName)leg+=`<span><i class="pt" style="border-color:${o.points[0]?.color||'var(--fg)'}"></i>${o.pointName}</span>`;
+  el.innerHTML=`<div class="chart-wrap"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.aria||o.yLabel||'chart')}">${g}</svg><div class="tip" hidden></div></div>${leg?`<div class="legend">${leg}</div>`:''}`;
+  const svg=el.querySelector('svg'),tip=el.querySelector('.tip'),hov=svg.querySelector('.hov'),named=(o.series||[]).filter(s=>s.name);
+  if(!named.length)return;
+  svg.addEventListener('mousemove',e=>{const r=svg.getBoundingClientRect(),px=(e.clientX-r.left)/r.width*W,xv=x0+(px-m.l)/(W-m.l-m.r)*(x1-x0);
+    let best=null,bd=1e9;named[0].x.forEach(v=>{const dd=Math.abs(v-xv);if(dd<bd){bd=dd;best=v;}});if(best==null)return;
+    hov.setAttribute('x1',X(best));hov.setAttribute('x2',X(best));hov.setAttribute('visibility','visible');
+    let h=`<b>${o.xName||'Day'} ${tickFmt(best)}</b>`;named.forEach(s=>{const i=s.x.indexOf(best);if(i>=0&&s.y[i]!=null&&isFinite(s.y[i]))h+=`<br><span style="color:${s.color}">●</span> ${s.name}: ${fmt(s.y[i],o.dp??2)}`;});
+    tip.innerHTML=h;tip.hidden=false;const left=X(best)/W*r.width;tip.style.left=(left>r.width*0.6?left-tip.offsetWidth-10:left+10)+'px';});
+  svg.addEventListener('mouseleave',()=>{tip.hidden=true;hov.setAttribute('visibility','hidden');});
+}
+function heatmap(el,G,selTs,disabled){
+  const rows=G.rows,nC=rows[0].row.length,W=fitW(el,640,300),m={l:48,r:10,t:8,b:42},ch=14,H=m.t+m.b+rows.length*ch,cw=(W-m.l-m.r)/nC;
+  let vmin=Infinity;rows.forEach(r=>r.row.forEach(v=>vmin=Math.min(vmin,v)));const vmax=G.best.v;
+  let g='';
+  rows.forEach((r,i)=>r.row.forEach((v,j)=>{const t=Math.max(0,(v-vmin)/((vmax-vmin)||1));
+    g+=`<rect x="${(m.l+j*cw).toFixed(1)}" y="${m.t+i*ch}" width="${(cw-1).toFixed(1)}" height="${ch-1}" style="fill:var(--axt);fill-opacity:${(0.05+0.92*t*t).toFixed(3)}"><title>Transfer on day ${r.ts}, ${j+RMIN} days in red (harvest on day ${r.ts+j+RMIN}): ${fmt(v,2)} mg/L/d</title></rect>`;}));
+  rows.forEach((r,i)=>{if(r.ts%2===0)g+=`<text x="${m.l-7}" y="${m.t+i*ch+11}" text-anchor="end" class="ax">${r.ts}</text>`;});
+  for(let j=0;j<nC;j+=2)g+=`<text x="${m.l+j*cw+cw/2}" y="${H-m.b+15}" text-anchor="middle" class="ax">${j+RMIN}</text>`;
+  g+=`<text x="${(m.l+W-m.r)/2}" y="${H-6}" text-anchor="middle" class="ax-l">Days in red phase</text>`;
+  g+=`<text x="11" y="${m.t+rows.length*ch/2}" transform="rotate(-90 11 ${m.t+rows.length*ch/2})" text-anchor="middle" class="ax-l">Transfer day</text>`;
+  const si=rows.findIndex(r=>r.ts===selTs);if(si>=0)g+=`<rect x="${m.l-1}" y="${m.t+si*ch-1}" width="${W-m.l-m.r+1}" height="${ch+1}" style="fill:none;stroke:var(--navy);stroke-width:1.3;stroke-dasharray:4 3"/>`;
+  const bi=rows.findIndex(r=>r.ts===G.best.ts),bj=G.best.r-RMIN;g+=`<rect x="${m.l+bj*cw-1}" y="${m.t+bi*ch-1}" width="${cw+1}" height="${ch+1}" style="fill:none;stroke:var(--navy);stroke-width:2.4"/>`;
+  el.innerHTML=`<div class="chart-wrap ${disabled?'disabled-overlay':''}" ${disabled?`data-msg="${esc(disabled)}"`:''}><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Decision map of transfer day against days in red phase">${g}</svg></div>`;
+}
+
+/* ---------------- render: context, overview, planner ---------------- */
+const C={algae:'var(--algae)',axt:'var(--axt)',grey:'var(--grey)',fg:'var(--fg)',navy:'var(--navy)',gold:'var(--gold-ink)',warn:'var(--warn)'};
+function recompute(){
+  const S=state.S=readS();$('#o_ts').textContent=S.ts;
+  const p=params(S),prof=buildProfile(state.scn,S);
+  state.grid=gridSearch(p,S,prof);
+  state.sim=simulate(p,S,prof,S.ts,RMAX);
+  state.mc=monteCarlo(p,S,prof,S.ts,120);
+  const profN=buildProfile('normal',S);
+  state.gridNormal=state.scn==='normal'?state.grid:gridSearch(p,S,profN);
+  state.mcNormal=state.scn==='normal'?state.mc:monteCarlo(p,S,profN,S.ts,120);
+  evaluateGate();renderAll();
+}
+function renderAll(){renderContext();renderOverview();renderSim();renderRobust();renderEcon();}
+const pill=lv=>`<span class="pill p-${lv}">${LV_TXT[lv]}</span>`;
+function renderContext(){
+  const g=state.gate,d=state.data;
+  $('#ctxScn').textContent=SCN[state.scn].name;
+  const el=$('#ctxGate');el.className='pill p-'+g.lv;el.textContent=LV_TXT[g.lv];
+  const n=d?Object.keys(d.batches).length:0;
+  $('#ctxData').textContent=d?`${d.label}, ${n} batch${n===1?'':'es'}`:'Example settings';
+}
+function kpi(label,val,unit,cls=''){return`<div class="kpi ${cls}"><div class="k-l">${label}</div><div class="k-v">${val}</div><div class="k-u">${unit}</div></div>`;}
+function renderOverview(){
+  const G=state.grid,S=state.S,b=G.best,g=state.gate,sim=simulate(params(S),S,buildProfile(state.scn,S),b.ts,RMAX),h=b.h,red=g.lv==='red';
+  $('#ovTs').textContent=red?'—':'Day '+b.ts;
+  $('#ovH').textContent=red?'—':'Day '+h;
+  $('#ovProd').textContent=red?'—':fmt(b.v,2);
+  $('#ovConc').textContent=red?'—':fmt(sim.A[h],1);
+  $('#ovContent').textContent=red?'—':fmt(sim.q[h]/10,1)+'%';
+  $('#ovGate').innerHTML=pill(g.lv);
+  const trig=g.rules.filter(r=>r.lv==='red'||r.lv==='yellow').map(r=>r.name.toLowerCase());
+  $('#ovGateWhy').textContent=trig.length?'Safeguards: '+trig.join(', '):'Safeguard status';
+}
+function renderSim(){
+  const S=state.S,sim=state.sim,mc=state.mc,G=state.grid,g=state.gate,ts=S.ts;
+  const rec=$('#simRec');rec.className='rec lv-'+g.lv;
+  const trig=g.rules.filter(r=>r.lv==='red'||r.lv==='yellow'),reds=trig.filter(r=>r.lv==='red');
+  const corr=mc.H.map(hh=>prodAt(sim,S,ts,hh).corr);
+  let iN=0;corr.forEach((v,i)=>{if(v>corr[iN])iN=i;});
+  const hNom=mc.H[iN],winN=mc.H.filter((hh,i)=>corr[i]>=0.95*corr[iN]);
+  if(g.lv==='red'){rec.innerHTML=`<div class="r-h">Optimisation paused: operator decision needed</div><div class="r-s">Triggered by ${reds.map(r=>'<b>'+esc(r.name.toLowerCase())+'</b> ('+esc(r.obs)+')').join(' and ')}. Next steps: ${reds.map(r=>esc(r.action)).join('; ')}.</div>`;}
+  else if(g.lv==='yellow'){rec.innerHTML=`<div class="r-h">Conservative plan: transfer on day ${ts}, harvest on day ${mc.h10}</div><div class="r-s">Based on the cautious estimate; the expected best day is ${hNom}. To return to full optimisation: ${trig.map(r=>esc(r.action)).join('; ')}.</div>`;}
+  else{rec.innerHTML=`<div class="r-h">Transfer on day ${ts}. Harvest on day ${hNom}.</div><div class="r-s">High-output window: days <b>${winN[0]}–${winN[winN.length-1]}</b> (within 5% of peak). Likely best harvest day: day <b>${fmt(mc.hBest10,0)}</b> to <b>${fmt(mc.hBest90,0)}</b>. ${G.best.ts===ts?'This is also the best overall plan':`Best overall plan: transfer on day <b>${G.best.ts}</b> and harvest after <b>${G.best.r}</b> days in red`}, about <b>${fmt(G.best.v,2)}</b> mg/L/d.</div>`;}
+  const h=g.lv==='yellow'?mc.h10:hNom,pr=prodAt(sim,S,ts,h),ih=mc.H.indexOf(h);
+  const ratio=S.mode==='same'?null:((h-ts+S.turnR)/S.D)/(ts+S.turnG);
+  $('#simKpis').innerHTML=
+    kpi('Whole-cycle productivity',fmt(pr.corr,2),`mg/L/d, likely ${fmt(mc.P10[ih],2)}–${fmt(mc.P90[ih],2)}`,'hl')+
+    kpi('Astaxanthin at harvest',fmt(sim.A[h],1),'mg/L in the red reactor')+
+    kpi('Astaxanthin content',fmt(sim.q[h]/10,2)+'%','of dry weight')+
+    kpi('Biomass at harvest',fmt(sim.X[h],2),'g/L dry weight')+
+    kpi('Light dose in red phase',fmt(sim.cum[h]-sim.cum[ts],0),'mol/m², incident')+
+    (ratio?kpi('Red to green reactor volume',fmt(ratio,2)+' : 1','keeps both phases fully used'):kpi('Reactor time per batch',fmt(pr.occ,1),'days including turnaround'));
+  lineChart($('#chProd'),{series:[{x:mc.H,y:corr,color:C.axt,name:'Whole-cycle productivity',w:2.6}],
+    bands:[{x:mc.H,lo:mc.P10,hi:mc.P90,color:C.axt,name:'Likely range',op:0.15}],
+    vlines:g.lv==='red'?[]:[{x:h,label:g.lv==='yellow'?'Conservative harvest':'Recommended harvest',color:C.navy}],
+    shade:g.lv==='green'?[{x0:winN[0]-0.5,x1:winN[winN.length-1]+0.5,color:C.navy,op:0.07,legend:'High-output window'}]:[],
+    xLabel:'Harvest day (days from inoculation)',yLabel:'mg/L/d',dp:2});
+  const dd=mc.days,sh=[{x0:0,x1:ts,color:C.algae,op:0.07,label:'Green'},{x0:ts,x1:dd[dd.length-1],color:C.axt,op:0.05,label:'Red'}];
+  lineChart($('#chX'),{series:[{x:dd,y:sim.X,color:C.algae,name:'Expected'}],bands:[{x:dd,lo:mc.bX.lo,hi:mc.bX.hi,color:C.algae,name:'Likely range'}],shade:sh,xLabel:'Day',yLabel:'g/L',w:420,h:250,vlines:[{x:ts,label:'Transfer'+(S.mode==='sep'&&S.D<1?' (×'+S.D+')':''),color:C.grey,dy:30}]});
+  lineChart($('#chA'),{series:[{x:dd,y:sim.A,color:C.axt,name:'Expected'}],bands:[{x:dd,lo:mc.bA.lo,hi:mc.bA.hi,color:C.axt,name:'Likely range'}],shade:sh,xLabel:'Day',yLabel:'mg/L',w:420,h:250,dp:1});
+  heatmap($('#chHeat'),G,ts,g.lv==='red'?'Safeguards have paused optimisation. Map shown for engineering review only.':null);
+}
+
+/* ---------------- render: safeguards ---------------- */
+function renderRobust(){
+  const g=state.gate,S=state.S;
+  $$('#scnChips .chipbtn').forEach(b=>b.setAttribute('aria-pressed',b.dataset.scn===state.scn));
+  $('#gateBig').className='pill p-'+g.lv;$('#gateBig').textContent=LV_TXT[g.lv];
+  $('#gateWhy').textContent=SCN[state.scn].desc?('Simulated scenario: '+SCN[state.scn].desc):'Simulated scenario: normal operation';
+  $('#gateRules').innerHTML='<tr><th>Check</th><th>Triggers at</th><th>Reading</th><th>Status</th></tr>'+g.rules.map(r=>`<tr><td class="strong">${esc(r.name)}</td><td>${esc(r.thr)}</td><td>${esc(r.obs)}</td><td><span class="lv ${r.lv}">${LV_SHORT[r.lv]}</span></td></tr>`).join('');
+  const trig=g.rules.filter(r=>r.lv==='red'||r.lv==='yellow');
+  $('#gateActions').innerHTML=trig.length?`<h3>Why, and what to do</h3><ul class="clean">${trig.map(r=>`<li><span class="lv ${r.lv}">${LV_SHORT[r.lv]}</span> ${esc(r.reason)}. <b>Next step:</b> ${esc(r.action)}.</li>`).join('')}</ul>`:'<p class="note">No checks triggered. Recommendations can be used to plan the batch; during a pilot, operators confirm each one before acting.</p>';
+  const prof=buildProfile(state.scn,S),N=Math.max(S.ts+RMAX,36),dd=[...Array(N+1).keys()];
+  const T=dd.map(d=>prof.T(d,d>=S.ts?'r':'g')),I=dd.map(d=>(d>=S.ts?S.Ir:S.Ig)*prof.I(d));
+  const sh=[{x0:0,x1:S.ts,color:C.algae,op:0.07,label:'Green'},{x0:S.ts,x1:N,color:C.axt,op:0.05,label:'Red'}];
+  lineChart($('#chT'),{series:[{x:dd,y:T,color:C.axt,name:'Culture temperature (°C)'}],shade:sh,ymin:10,xLabel:'Day',yLabel:'°C',w:460,h:220,dp:1});
+  lineChart($('#chI'),{series:[{x:dd,y:I,color:C.algae,name:'Light (µmol/m²/s)'}],shade:sh,xLabel:'Day',yLabel:'µmol/m²/s',w:460,h:220,dp:0});
+  const a=state.mcNormal,b=state.mc,d=(b.pMax-a.pMax)/a.pMax*100;
+  if(state.scn==='normal'){$('#robImpact').innerHTML=`<p class="note">Choose a scenario above to compare it with normal conditions. Under normal conditions the best harvest day is day ${a.h50}, at ${fmt(a.pMax,2)} mg/L/d.</p>`;}
+  else $('#robImpact').innerHTML=`<div class="tbl-wrap"><table><tr><th></th><th>Normal</th><th>${esc(SCN[state.scn].name)}</th></tr>
+   <tr><td>Best harvest day</td><td class="n">Day ${a.h50}</td><td class="n">Day ${b.h50}</td></tr>
+   <tr><td>Whole-cycle productivity (mg/L/d)</td><td class="n">${fmt(a.pMax,2)}</td><td class="n">${fmt(b.pMax,2)} (${d>=0?'+':'−'}${fmt(Math.abs(d),1)}%)</td></tr>
+   <tr><td>Forecast spread</td><td class="n">${fmt(a.spread*100,0)}%</td><td class="n">${fmt(b.spread*100,0)}%</td></tr></table></div>
+   <p class="note">Heat and light scenarios change the forecast. Missing data, offline, fault and contamination scenarios change only the safeguard status, because the system doesn't forecast what it doesn't model.</p>`;
+  $('#auditTbl').innerHTML='<tr><th>Time</th><th>Conditions</th><th>Transfer day</th><th>Status</th><th>Triggered by</th></tr>'+state.audit.map(r=>`<tr><td style="white-space:nowrap">${esc(r.time)}</td><td>${esc(r.scn)}</td><td class="n">${r.ts}</td><td><span class="lv ${r.lv}">${LV_TXT[r.lv]}</span></td><td>${esc(r.rules)}</td></tr>`).join('');
+}
+
+/* ---------------- business case ---------------- */
+function econInputs(){const e=id=>Math.max(0,parseFloat($(id).value)||0);
+  return{Vg:e('#e_Vg'),Vr:e('#e_Vr'),days:e('#e_days'),rec:Math.min(1,e('#e_rec')),qual:Math.min(1,e('#e_qual')),price:e('#e_price'),occ:e('#e_occ'),dsp:e('#e_dsp'),fixed:e('#e_fixed')};}
+function econEval(sim,ts,h,E){
+  const S=state.S,A=sim.A[h],X=sim.X[h],D=sim.D;let thr,bottle,util;
+  let ug=1,ur=1;
+  if(S.mode==='same'){thr=(E.Vg+E.Vr)*1000*E.days/(h+S.turnG);bottle='—';util='—';}
+  else{const tg=E.Vg*1000*E.days/(ts+S.turnG),tr=E.Vr*1000*E.days/((h-ts+S.turnR)/D);thr=Math.min(tg,tr);ug=thr/tg;ur=thr/tr;
+    bottle=Math.min(ug,ur)>0.97?'Balanced':tg<tr?'Green reactors':'Red reactors';util=`Green ${fmt(ug*100,0)}%, red ${fmt(ur*100,0)}%`;}
+  const bioKg=thr*X/D/1000,axtCult=thr*A/D/1e6,axtSell=axtCult*E.rec*E.qual;
+  const cost=(E.Vg+E.Vr)*E.days*E.occ+bioKg*E.dsp+E.fixed,rev=axtSell*E.price;
+  return{ts,h,A,q:sim.q[h],thr,bottle,util,ug,ur,bioKg,axtCult,axtSell,cost,rev,profit:rev-cost,unit:axtSell>0?cost/axtSell:NaN};
+}
+function econStrategy(ts,h,E){const S=state.S,sim=simulate(params(S),S,buildProfile(state.scn,S),ts,RMAX);return econEval(sim,ts,h,E);}
+function econOptimize(E){const S=state.S,p=params(S),prof=buildProfile(state.scn,S);let best=null;
+  for(let ts=TSMIN;ts<=TSMAX;ts++){const sim=simulate(p,S,prof,ts,RMAX);for(let r=RMIN;r<=RMAX;r++){const x=econEval(sim,ts,ts+r,E);if(!best||x.profit>best.profit)best=x;}}return best;}
+function renderEcon(){
+  const hc=parseInt($('#e_hCur').value,10),tc=parseInt($('#e_tsCur').value,10);
+  const tsCur=Math.min(TSMAX,Math.max(TSMIN,tc||12)),hCur=Math.max(tsCur+RMIN,Math.min(tsCur+RMAX,hc||30));
+  const E=econInputs(),cur=econStrategy(tsCur,hCur,E),cand=econOptimize(E);state.econ={cur,cand};
+  const rows=[['Transfer day / harvest day',x=>`Day ${x.ts} / day ${x.h}`,null],
+    ['Astaxanthin at harvest (mg/L)',x=>fmt(x.A,1),'A',v=>fmt(v,1)],['Astaxanthin content (% DW)',x=>fmt(x.q/10,2),null],
+    ['Green culture processed (m³/year)',x=>fmt(x.thr/1000,0),'thr1',v=>fmt(v,0)],['Bottleneck',x=>x.bottle,null],['Reactor use',x=>x.util,null],
+    ['Astaxanthin produced (kg/year)',x=>fmt(x.axtCult,1),'axtCult',v=>fmt(v,1)],['Saleable astaxanthin (kg/year)',x=>fmt(x.axtSell,1),'axtSell',v=>fmt(v,1)],['Dry biomass (kg/year)',x=>fmt(x.bioKg,0),'bioKg',v=>fmt(v,0)],
+    ['Revenue (£/year)',x=>money(x.rev),'rev',v=>money(v)],['Total cost (£/year)',x=>money(x.cost),'cost',v=>money(v)],['Cost per kg (break-even price)',x=>money(x.unit),'unit',v=>money(v)],['Profit (£/year)',x=>money(x.profit),'profit',v=>money(v)]];
+  const diff=(k,f)=>{if(!k)return'';const a=k==='thr1'?cur.thr/1000:cur[k],c=k==='thr1'?cand.thr/1000:cand[k];if(!isFinite(a)||!isFinite(c))return'—';const d=c-a;return(d>0?'+':d<0?'−':'')+f(Math.abs(d)).replace('−','');};
+  $('#econTbl').innerHTML='<tr><th>Measure</th><th>Current practice</th><th>Optimised plan</th><th>Difference</th></tr>'+rows.map(r=>`<tr><td>${r[0]}</td><td class="n">${r[1](cur)}</td><td class="n strong">${r[1](cand)}</td><td class="n">${diff(r[2],r[3])}</td></tr>`).join('');
+  const red=state.gate.lv==='red';
+  $('#econNote').innerHTML=(red?'<b style="color:var(--crit)">Safeguards have paused optimisation: do not act on the optimised plan.</b> ':'')+`Conditions: ${esc(SCN[state.scn].name)}. The optimised plan searches transfer and harvest days for the highest annual profit with your reactor volumes. Figures are model estimates with illustrative costs, to be confirmed in a pilot.`;
+  const dp=cand.profit-cur.profit,dk=cand.axtSell-cur.axtSell,du=cand.unit-cur.unit;
+  const rel=(d,base)=>base>0&&isFinite(d)?` (${d>=0?'+':'−'}${fmt(Math.abs(d/base*100),0)}%)`:'';
+  let be='';
+  if(cand.profit<0)be=` At the illustrative price of ${money(E.price)} per kg, ${cur.profit<0?'both schedules run':'the optimised plan runs'} below break-even; replace the price and costs with your own figures.`;
+  else if(cur.profit<0)be=` At the illustrative price of ${money(E.price)} per kg, current practice runs below break-even while the optimised plan is profitable.`;
+  $('#econSummary').innerHTML=`<p>With these assumptions, the optimised plan (transfer on day ${cand.ts}, harvest on day ${cand.h}) ${dk>=0?'adds':'removes'} <b>${fmt(Math.abs(dk),1)} kg</b> of saleable astaxanthin a year${rel(dk,cur.axtSell)} and ${dp>=0?'improves':'reduces'} profit by <b>${money(Math.abs(dp))}</b> a year, compared with current practice (transfer on day ${cur.ts}, harvest on day ${cur.h}).</p>
+    <p>The cost of each kilogram ${du<=0?'falls':'rises'} from ${money(cur.unit)} to <b>${money(cand.unit)}</b>${rel(du,cur.unit)}, which is also the selling price needed to break even.${be}</p>
+    <p>The gain comes from how long each batch holds a reactor: ${bottleText(cur,cand)}.</p>
+    <p>A pilot confirms these numbers on your site: the model is calibrated on two or three of your batches, recovery and pass rate come from your downstream records, and the new transfer day is tested in a controlled trial.</p>`;
+  $('#savedTbl').innerHTML=state.saved.length?'<tr><th>Saved</th><th>Conditions</th><th>Current plan</th><th>Optimised plan</th><th>Saleable kg/year (current / optimised)</th><th>Profit £/year (current / optimised)</th><th></th></tr>'+state.saved.map((s,i)=>`<tr><td class="n">${esc(s.time)}</td><td>${esc(s.scn)}</td><td>${esc(s.cur)}</td><td>${esc(s.cand)}</td><td class="n">${esc(s.kg)}</td><td class="n">${esc(s.pf)}</td><td><button class="btn sm" type="button" data-del="${i}">Remove</button></td></tr>`).join(''):'<tr><td class="note">No saved scenarios yet.</td></tr>';
+}
+function bottleText(cur,cand){
+  if(cand.bottle==='—')return'with a single reactor, a shorter cycle that still harvests near peak productivity frees capacity for more batches a year';
+  if(cand.bottle==='Balanced')return cur.bottle==='Balanced'?'both schedules keep green and red reactors fully used, so the gain comes from harvesting nearer the peak of whole-cycle productivity'
+    :`current practice leaves part of the ${cur.ug<cur.ur?'green':'red'} reactor capacity idle (${cur.util.toLowerCase()}), while the optimised plan keeps both phases fully used`;
+  return`with these volumes the ${cand.bottle.toLowerCase()} limit output (${cand.util.toLowerCase()}), so rebalancing reactor volumes may pay off faster than changing the process`;}
+function econCSV(){const{cur,cand}=state.econ;const k=['ts','h','A','q','thr','axtCult','axtSell','bioKg','rev','cost','unit','profit'];
+  const head=['plan','transfer_day','harvest_day','astaxanthin_mg_L','astaxanthin_mg_g','green_culture_L_per_year','astaxanthin_produced_kg','astaxanthin_saleable_kg','dry_biomass_kg','revenue_GBP','total_cost_GBP','cost_per_kg_GBP','profit_GBP'];
+  return head.join(',')+'\n'+[['current_practice',cur],['optimised_plan',cand]].map(([n,x])=>n+','+k.map(kk=>isFinite(x[kk])?(+x[kk]).toFixed(4):'').join(',')).join('\n')+`\n# conditions=${SCN[state.scn].name}; model estimates with illustrative cost assumptions`;}
+
+/* ---------------- your data: parsing, cleaning, fitting ---------------- */
+const ALIASES={batch:['batch_id','batch','batchid','batch_no','batch_number','lot','run'],day:['day','days','time_day','time_d','culture_day','day_no'],bio:['biomass_g_l','biomass_g_dw_l','biomass','dw_g_l','dry_weight_g_l','dcw_g_l','biomass_dw'],axt:['axt_mg_g_dw','axt_mg_g','astaxanthin_mg_g_dw','astaxanthin_mg_g','astaxanthin','axt'],temp:['temp_c','temperature','temperature_c','temp_mean_c','temp'],pfd:['pfd_umol_m2_s','pfd','par','par_umol_m2_s','par_umol_m2_s_mean','light']};
+const FIELD_NAMES={batch:'Batch ID *',day:'Day *',bio:'Biomass, g/L dry weight *',axt:'Astaxanthin, mg/g dry weight *',temp:'Temperature, °C',pfd:'Light, µmol/m²/s'};
+function parseCSV(text){
+  text=String(text).replace(/^﻿/,'');const lines=text.split(/\r?\n/).filter(l=>l.trim().length&&!l.trim().startsWith('#'));if(lines.length<2)return null;
+  const delim=[',',';','\t'].map(d=>[d,lines[0].split(d).length]).sort((a,b)=>b[1]-a[1])[0][0];
+  const split=l=>{const o=[];let c='',q=false;for(let i=0;i<l.length;i++){const ch=l[i];if(q){if(ch==='"'){if(l[i+1]==='"'){c+='"';i++;}else q=false;}else c+=ch;}else if(ch==='"')q=true;else if(ch===delim){o.push(c);c='';}else c+=ch;}o.push(c);return o.map(s=>s.trim());};
+  return{header:split(lines[0]),rows:lines.slice(1).map(split)};
+}
+const norm=s=>String(s).toLowerCase().replace(/[\s\-\/]+/g,'_').replace(/[()\[\]]/g,'').replace(/_+$/,'');
+function autoMap(header){const m={};const H=header.map(norm);for(const f in ALIASES){m[f]=H.findIndex(h=>ALIASES[f].includes(h));if(m[f]<0)m[f]=H.findIndex(h=>ALIASES[f].some(a=>a.length>3&&h.startsWith(a)));}return m;}
+function numOf(s){if(s==null)return{st:'missing'};const t=String(s).trim();if(t===''||/^(na|n\/a|nan|null|none|missing|-|—)$/i.test(t))return{st:'missing'};const v=Number(t);return isFinite(v)?{st:'ok',v}:{st:'bad',raw:t};}
+function cleanData(parsed,map){
+  const issues=[],recs=[];const req=['batch','day','bio','axt'];const miss=req.filter(f=>!(map[f]>=0));
+  if(miss.length){issues.push({lv:'red',line:'—',msg:'Required columns not matched: '+miss.map(f=>FIELD_NAMES[f].replace(' *','')).join(', ')+'. Choose them under “Match your columns”.'});return{issues,recs:[],fatal:true};}
+  let nMissB=0,nMissA=0;
+  parsed.rows.forEach((r,ri)=>{const line=ri+2;const b=(r[map.batch]||'').trim();if(!b){issues.push({lv:'yellow',line,msg:'No batch ID, so the row was skipped'});return;}
+    const dy=numOf(r[map.day]);if(dy.st!=='ok'||dy.v<0){issues.push({lv:'red',line,msg:`Day value “${esc(r[map.day]??'')}” isn't valid, so the row was skipped`});return;}
+    const rec={batch:b,day:dy.v,bio:null,axt:null,temp:null,pfd:null,line};
+    const B=numOf(r[map.bio]);if(B.st==='ok'){if(B.v<0)issues.push({lv:'red',line,msg:`Negative biomass (${B.v}) set to missing`});else if(B.v>15)issues.push({lv:'yellow',line,msg:`Biomass of ${B.v} g/L is far above the usual range and may be in mg/L. Set to missing: please check the unit`});else rec.bio=B.v;}else if(B.st==='bad')issues.push({lv:'red',line,msg:`Biomass “${esc(B.raw)}” isn't a number. Set to missing, not zero`});else nMissB++;
+    const Q=numOf(r[map.axt]);if(Q.st==='ok'){if(Q.v<0)issues.push({lv:'red',line,msg:`Negative astaxanthin content (${Q.v}) set to missing`});else if(Q.v>80)issues.push({lv:'yellow',line,msg:`Astaxanthin content of ${Q.v} mg/g is above the highest levels reported (about 70 mg/g). Set to missing: please check the unit`});else rec.axt=Q.v;}else if(Q.st==='bad')issues.push({lv:'red',line,msg:`Astaxanthin content “${esc(Q.raw)}” isn't a number. Set to missing, not zero`});else nMissA++;
+    if(map.temp>=0){const t=numOf(r[map.temp]);if(t.st==='ok')rec.temp=t.v;}
+    if(map.pfd>=0){const t=numOf(r[map.pfd]);if(t.st==='ok')rec.pfd=t.v;}
+    recs.push(rec);});
+  const grp={};recs.forEach(r=>{const k=r.batch+'|'+r.day;(grp[k]=grp[k]||[]).push(r);});
+  const out=[];Object.values(grp).forEach(g=>{if(g.length===1){out.push(g[0]);return;}
+    const avg=k=>{const v=g.map(r=>r[k]).filter(x=>x!=null);return v.length?v.reduce((a,b)=>a+b,0)/v.length:null;};
+    issues.push({lv:'yellow',line:g.map(r=>r.line).join(', '),msg:`Batch ${esc(g[0].batch)}, day ${g[0].day}: ${g.length} duplicate samples averaged`});
+    out.push({batch:g[0].batch,day:g[0].day,bio:avg('bio'),axt:avg('axt'),temp:avg('temp'),pfd:avg('pfd'),line:g.map(r=>r.line).join(',')});});
+  const ax=out.map(r=>r.axt).filter(v=>v!=null);
+  if(ax.length>=3&&Math.max(...ax)<=8&&pct(ax,.5)>0.3)issues.push({lv:'yellow',line:'—',msg:'All astaxanthin values are 8 or below, which suggests % of dry weight rather than mg/g (1% = 10 mg/g). Values were not converted: please confirm the unit.'});
+  if(nMissB||nMissA)issues.push({lv:'info',line:'—',msg:`Blank cells: ${nMissB} biomass and ${nMissA} astaxanthin. Kept as missing, not zero.`});
+  out.sort((a,b)=>a.batch.localeCompare(b.batch)||a.day-b.day);
+  return{issues,recs:out,fatal:false};
+}
+function nelderMead(f,x0,iter=500){
+  const n=x0.length;let P=[x0.slice()];for(let i=0;i<n;i++){const x=x0.slice();x[i]+=Math.abs(x[i])>1e-3?0.25*Math.abs(x[i]):0.25;P.push(x);}
+  let V=P.map(f);
+  for(let k=0;k<iter;k++){
+    const idx=[...V.keys()].sort((a,b)=>V[a]-V[b]);P=idx.map(i=>P[i]);V=idx.map(i=>V[i]);
+    if(Math.abs(V[n]-V[0])<1e-10*(1+Math.abs(V[0])))break;
+    const c=new Array(n).fill(0);for(let i=0;i<n;i++)for(let j=0;j<n;j++)c[j]+=P[i][j]/n;
+    const at=a=>c.map((cj,j)=>cj+a*(P[n][j]-cj));
+    const xr=at(-1),fr=f(xr);
+    if(fr<V[0]){const xe=at(-2),fe=f(xe);if(fe<fr){P[n]=xe;V[n]=fe;}else{P[n]=xr;V[n]=fr;}}
+    else if(fr<V[n-1]){P[n]=xr;V[n]=fr;}
+    else{const xc=at(0.5),fc=f(xc);if(fc<V[n]){P[n]=xc;V[n]=fc;}else{for(let i=1;i<=n;i++){P[i]=P[i].map((v,j)=>P[0][j]+0.5*(v-P[0][j]));V[i]=f(P[i]);}}}
+  }
+  let bi=0;V.forEach((v,i)=>{if(v<V[bi])bi=i;});return{x:P[bi],f:V[bi]};
+}
+const logi=(th,t)=>{const X0=Math.exp(th[0]),mu=Math.exp(th[1]),K=Math.exp(th[2]);return K/(1+((K-X0)/X0)*Math.exp(-mu*t));};
+const qfun=(th,t,t1)=>{const q0=th[0],k=Math.exp(th[1]),qm=Math.exp(th[2]);return t<t1?null:qm-(qm-q0)*Math.exp(-k*(t-t1));};
+function fitLogistic(pts){const x0=[Math.log(Math.max(pts[0].v,1e-3)),Math.log(0.3),Math.log(Math.max(...pts.map(p=>p.v))*1.2)];
+  const f=th=>{const mu=Math.exp(th[1]);if(mu>5)return 1e9;return pts.reduce((s,p)=>s+(p.v-logi(th,p.t))**2,0);};return nelderMead(f,x0).x;}
+function fitQ(pts,t1){const x0=[pts[0].v,Math.log(0.2),Math.log(Math.max(...pts.map(p=>p.v))*1.3)];
+  const f=th=>{const k=Math.exp(th[1]),qm=Math.exp(th[2]);if(k>5||qm>120)return 1e9;return pts.reduce((s,p)=>s+(p.v-qfun(th,p.t,t1))**2,0);};return nelderMead(f,x0).x;}
+function analyzeBatch(recs,pre,turn){
+  const bio=recs.filter(r=>r.bio!=null),ax=recs.filter(r=>r.axt!=null),pair=recs.filter(r=>r.bio!=null&&r.axt!=null);
+  pair.forEach(r=>{r.A=r.bio*r.axt;r.P=r.A/(r.day+pre+turn);});
+  const obsBest=pair.length?pair.reduce((a,b)=>b.P>a.P?b:a):null;
+  const span=ax.length?ax[ax.length-1].day-ax[0].day:0,canX=bio.length>=5,canQ=ax.length>=4&&span>=6;
+  let reason='';if(!ax.length)reason='No astaxanthin measurements';else if(ax.length===1)reason='Only one astaxanthin end-point, so the best harvest day can’t be estimated';else if(!canQ)reason=`${ax.length} astaxanthin points over ${days(span)}; at least 4 points over 6 days are needed`;if(!canX)reason=(reason?reason+'. ':'')+`${bio.length} biomass point${bio.length===1?'':'s'}; at least 5 are needed`;
+  return{recs,bio,ax,pair,obsBest,predOK:canX&&canQ,reason:reason||'Enough data for a forecast',pred:null};
+}
+function predictBatch(b,pre,turn){
+  const t1=b.ax[0].day,bp=b.bio.map(r=>({t:r.day,v:r.bio})),qp=b.ax.map(r=>({t:r.day,v:r.axt}));
+  const lastObs=Math.max(...b.recs.map(r=>r.day)),tEnd=lastObs+10,T=[];for(let t=Math.floor(t1);t<=tEnd;t++)T.push(t);
+  const thX=fitLogistic(bp),thQ=fitQ(qp,t1);
+  const curve=(tx,tq)=>T.map(t=>{const q=qfun(tq,t,t1);return q==null?null:logi(tx,t)*q;});
+  const rX=bp.map(p=>p.v/logi(thX,p.t)),rQ=qp.map(p=>p.v/qfun(thQ,p.t,t1));
+  const rnd=mulberry32(7),Ps=[],bestT=[];
+  for(let k=0;k<60;k++){const bx=bp.map(p=>({t:p.t,v:logi(thX,p.t)*rX[Math.floor(rnd()*rX.length)]})),bq=qp.map(p=>({t:p.t,v:qfun(thQ,p.t,t1)*rQ[Math.floor(rnd()*rQ.length)]}));
+    const tx=fitLogistic(bx),tq=fitQ(bq,t1),A=curve(tx,tq),P=A.map((a,i)=>a==null?null:a/(T[i]+pre+turn));Ps.push(P);let bi=0;P.forEach((v,i)=>{if(v>P[bi])bi=i;});bestT.push(T[bi]);}
+  const P10=T.map((_,i)=>pct(Ps.map(p=>p[i]),.1)),P50=T.map((_,i)=>pct(Ps.map(p=>p[i]),.5)),P90=T.map((_,i)=>pct(Ps.map(p=>p[i]),.9));
+  let bi=0;P50.forEach((v,i)=>{if(v>P50[bi])bi=i;});const win=T.filter((t,i)=>P50[i]>=0.95*P50[bi]);
+  const rmse=a=>Math.sqrt(a.reduce((s,x)=>s+x*x,0)/a.length);
+  const rmX=rmse(bp.map(p=>p.v-logi(thX,p.t))),rmQ=rmse(qp.map(p=>p.v-qfun(thQ,p.t,t1)));
+  let hold=null;
+  if(b.ax.length>=6&&b.bio.length>=6){const cut=b.ax[b.ax.length-3].day;const bx=bp.filter(p=>p.t<=cut),bq=qp.filter(p=>p.t<=cut);
+    if(bx.length>=5&&bq.length>=4){const tx=fitLogistic(bx),tq=fitQ(bq,t1);const test=b.pair.filter(r=>r.day>cut);
+      if(test.length){const ape=test.map(r=>Math.abs(logi(tx,r.day)*qfun(tq,r.day,t1)-r.A)/r.A);hold={cut,n:test.length,mape:ape.reduce((a,c)=>a+c,0)/ape.length};}}}
+  return{T,thX,thQ,t1,P10,P50,P90,best:T[bi],win:[win[0],win[win.length-1]],bt10:pct(bestT,.1),bt90:pct(bestT,.9),rmX,rmQ,hold,lastObs,extrap:T[bi]>lastObs+3,pMax:P50[bi]};
+}
+function loadData(text,label){
+  const parsed=parseCSV(text);
+  if(!parsed){$('#dqReport').innerHTML='<div class="empty">Couldn’t read this: the file needs a header row and at least one data row.</div>';return;}
+  const map=autoMap(parsed.header);state.pending={parsed,label};
+  const opts=['<option value="-1">Not in my data</option>'].concat(parsed.header.map((h,i)=>`<option value="${i}">${esc(h)}</option>`)).join('');
+  $('#mapFields').innerHTML=Object.keys(FIELD_NAMES).map(f=>`<div class="field"><label for="map_${f}">${FIELD_NAMES[f]}</label><select id="map_${f}">${opts}</select></div>`).join('');
+  Object.keys(FIELD_NAMES).forEach(f=>$('#map_'+f).value=String(map[f]));
+  $('#mapBox').hidden=false;applyMap();
+}
+function applyMap(){
+  const pd=state.pending;if(!pd)return;const map={};Object.keys(FIELD_NAMES).forEach(f=>map[f]=parseInt($('#map_'+f).value,10));
+  const c=cleanData(pd.parsed,map);
+  const order={red:0,yellow:1,info:2};c.issues.sort((a,b)=>order[a.lv]-order[b.lv]);
+  const cnt=lv=>c.issues.filter(i=>i.lv===lv).length,pl=(n,w)=>n+' '+w+(n===1?'':'s');
+  $('#dqReport').innerHTML=`<p class="note">${esc(pd.label)}: ${pl(pd.parsed.rows.length,'row')} read, ${pl(c.recs.length,'valid record')}. ${pl(cnt('red'),'error')}, ${pl(cnt('yellow'),'warning')}, ${pl(cnt('info'),'note')}.</p>`+
+    (c.issues.length?`<div class="issues">${c.issues.map(i=>`<div><span class="lv ${i.lv}">${i.lv==='red'?'Error':i.lv==='yellow'?'Warning':'Note'}</span><span class="note">${i.line==='—'?'All rows':'Row '+esc(i.line)}</span><span>${i.msg}</span></div>`).join('')}</div>`:'<p class="lv green">No format or unit problems found.</p>');
+  if(c.fatal){state.data=null;$('#batchSel').innerHTML='';$('#cleanOut').value='';$('#btnClean').disabled=true;renderBatch();evaluateGate();renderContext();renderOverview();return;}
+  const batches={};c.recs.forEach(r=>(batches[r.batch]=batches[r.batch]||[]).push(r));
+  const pre=parseFloat($('#f_pre').value)||0,turn=parseFloat($('#f_turn').value)||0;
+  const res={};for(const k in batches)res[k]=analyzeBatch(batches[k],pre,turn);
+  state.data={label:pd.label,batches:res,cur:Object.keys(res)[0],pre,turn,recs:c.recs};
+  $('#batchSel').innerHTML=Object.keys(res).map(k=>`<option value="${esc(k)}">${esc(k)}</option>`).join('');
+  $('#cleanOut').value='Batch_ID,Day,Biomass_g_L,AXT_mg_g_DW,AXT_mg_L,Productivity_mg_L_d,Temp_C,PFD,source_rows\n'+c.recs.map(r=>{const A=r.bio!=null&&r.axt!=null?r.bio*r.axt:null;return[r.batch,r.day,r.bio??'',r.axt??'',A!=null?A.toFixed(3):'',A!=null?(A/(r.day+pre+turn)).toFixed(4):'',r.temp??'',r.pfd??'','"'+r.line+'"'].join(',');}).join('\n')+`\n# Productivity = AXT_mg_L / (Day + ${pre} days before day 0 + ${turn} turnaround days). Blank cells are missing values, not zeros.`;
+  $('#btnClean').disabled=false;
+  renderBatch();evaluateGate();renderContext();renderOverview();renderRobust();
+}
+function renderBatch(){
+  const d=state.data,btn=$('#btnPredict');
+  if(!d||!d.cur){btn.disabled=true;$('#predReason').textContent='';$('#batchInfo').innerHTML='';['#chDX','#chDQ','#chDP'].forEach(s=>$(s).innerHTML='<div class="empty">No data</div>');$('#predTable').innerHTML='';return;}
+  const b=d.batches[d.cur];btn.disabled=!b.predOK;
+  $('#predReason').innerHTML=b.predOK?'There is enough data to estimate this batch’s harvest window. The estimate uses this batch only.':`<b style="color:var(--warn)">Estimate unavailable:</b> ${esc(b.reason)}. Measured results are shown below.`;
+  const ob=b.obsBest;
+  $('#batchInfo').innerHTML=`<div class="kpis" style="margin-bottom:10px">${kpi('Biomass points',b.bio.length,'measured')}${kpi('Astaxanthin points',b.ax.length,'measured')}${kpi('Paired points',b.pair.length,'used to calculate mg/L')}${kpi('Best measured day',ob?'Day '+ob.day:'—',ob?`${fmt(ob.P,2)} mg/L/d (${b.pair.length===1?'single end-point, not necessarily the best':'among measured days'})`:'No paired measurements')}</div>`;
+  const p=b.pred;
+  const cw=280,chh=230;
+  lineChart($('#chDX'),{points:b.bio.map(r=>({x:r.day,y:r.bio,color:C.algae})),pointName:'Measured',series:p?[{x:p.T,y:p.T.map(t=>logi(p.thX,t)),color:C.algae,name:'Fitted',dash:'5 3'}]:[],xLabel:'Day',yLabel:'g/L',h:chh,w:cw,empty:'No biomass data'});
+  lineChart($('#chDQ'),{points:b.ax.map(r=>({x:r.day,y:r.axt,color:C.axt})),pointName:'Measured',series:p?[{x:p.T,y:p.T.map(t=>qfun(p.thQ,t,p.t1)),color:C.axt,name:'Fitted',dash:'5 3'}]:[],xLabel:'Day',yLabel:'mg/g',h:chh,w:cw,empty:'No astaxanthin data'});
+  if(p){const after=p.best>p.lastObs;
+    lineChart($('#chDP'),{points:b.pair.map(r=>({x:r.day,y:r.P,color:C.navy})),pointName:'Measured days',series:[{x:p.T,y:p.P50,color:C.axt,name:'Estimate'}],bands:[{x:p.T,lo:p.P10,hi:p.P90,color:C.axt,name:'Likely range'}],
+      vlines:[{x:p.lastObs,label:'Last measured',color:C.grey,anchor:after?'end':'start',dy:14},{x:p.best,label:'Best',color:C.navy,anchor:after?'start':'end',dy:30}],xLabel:'Day',yLabel:'mg/L/d',h:chh,w:cw});}
+  else lineChart($('#chDP'),{points:b.pair.map(r=>({x:r.day,y:r.P,color:C.navy})),pointName:'Measured days',marks:ob&&b.pair.length>1?[{x:ob.day,y:ob.P,color:C.axt}]:[],xLabel:'Day',yLabel:'mg/L/d',h:chh,w:cw,empty:'No paired measurements to calculate'});
+  $('#predTable').innerHTML=p?`<div class="tbl-wrap" style="margin-top:12px"><table><tr><th>Result</th><th>Value</th><th>Notes</th></tr>
+    <tr><td class="strong">Estimated best harvest day</td><td class="n">Day ${p.best}</td><td>${p.extrap?'<span class="lv yellow">Caution</span> More than 3 days beyond your last measurement':'Close to your measured range'}</td></tr>
+    <tr><td>High-output window</td><td class="n">Days ${p.win[0]}–${p.win[1]}</td><td>Within 5% of peak</td></tr>
+    <tr><td>Likely range for the best day</td><td class="n">Day ${fmt(p.bt10,0)} to ${fmt(p.bt90,0)}</td><td>80% of resampled fits fall in this range</td></tr>
+    <tr><td>Peak whole-cycle productivity</td><td class="n">${fmt(p.pMax,2)} mg/L/d</td><td>Counts ${days(d.pre)} before day 0 and ${days(d.turn)} turnaround</td></tr>
+    <tr><td>Fit error, biomass</td><td class="n">${fmt(p.rmX,3)} g/L</td><td>Within this batch</td></tr>
+    <tr><td>Fit error, astaxanthin</td><td class="n">${fmt(p.rmQ,2)} mg/g</td><td>Within this batch</td></tr>
+    <tr><td>Hold-out check</td><td class="n">${p.hold?fmt(p.hold.mape*100,1)+'% average error':'—'}</td><td>${p.hold?`Fitted on data up to day ${p.hold.cut}, tested on the next ${p.hold.n} point${p.hold.n===1?'':'s'}. A full check uses a separate batch.`:'Not enough points for this check'}</td></tr></table></div>`:'';
+}
+
+/* ---------------- samples and template (synthetic) ---------------- */
+function synthBatch(id,ts,Ir,seed,{axtDays,bioDays}){
+  const S={...state.S,mode:'same',Ir,ts},p=params(S),sim=simulate(p,S,buildProfile('normal',S),ts,RMAX),rnd=mulberry32(seed),noise=s=>1+s*gauss(rnd),rows=[];
+  const dd=[...new Set(bioDays.concat(axtDays))].sort((a,b)=>a-b);
+  dd.forEach(d=>{const b=bioDays.includes(d)?(sim.X[d]*noise(.05)).toFixed(3):'';const a=axtDays.includes(d)?(sim.q[d]*noise(.07)).toFixed(2):'';rows.push([id,d,b,a,d<ts?S.Tg:S.Tr,d<ts?S.Ig:Ir,d<ts?'green':'red','synthetic_demo'].join(','));});
+  return rows;
+}
+const HDR='Batch_ID,Day,Biomass_g_L,AXT_mg_g_DW,Temp_C,PFD_umol_m2_s,Stage,Data_Type';
+function sampleA(){const ev=n=>[...Array(n).keys()].map(i=>i*2);return['# Synthetic sample: generated by the demo model with 5–7% random noise. Not measured data.',HDR].concat(
+  synthBatch('HP-SYN-A1',8,800,11,{bioDays:ev(13),axtDays:[8,10,12,14,16,18,20,22,24]}),
+  synthBatch('HP-SYN-A2',11,600,23,{bioDays:ev(13),axtDays:[12,14,16,18,20,22,24]})).join('\n');}
+function sampleB(){return['# Synthetic sample: full biomass series, but only one astaxanthin end-point (day 22)',HDR].concat(synthBatch('HP-SYN-B1',9,800,5,{bioDays:[0,2,4,6,8,10,12,14,16,18,20,22],axtDays:[22]})).join('\n');}
+function sampleC(){return['# Synthetic sample with deliberate problems: text in number fields, negative values, unit errors, duplicate samples and blanks',HDR,
+ 'HP-SYN-C1,0,0.10,,22,150,green,synthetic_demo','HP-SYN-C1,2,0.17,,22,150,green,synthetic_demo','HP-SYN-C1,4,abc,,22,150,green,synthetic_demo',
+ 'HP-SYN-C1,6,0.41,,22,150,green,synthetic_demo','HP-SYN-C1,8,0.58,1.2,22,150,green,synthetic_demo','HP-SYN-C1,10,0.66,6.1,25,800,red,synthetic_demo',
+ 'HP-SYN-C1,10,0.70,6.5,25,800,red,synthetic_demo','HP-SYN-C1,12,-0.2,11.8,25,800,red,synthetic_demo','HP-SYN-C1,14,950,16.0,25,800,red,synthetic_demo',
+ 'HP-SYN-C1,16,1.05,,25,800,red,synthetic_demo','HP-SYN-C1,18,1.12,24.5,25,800,red,synthetic_demo','HP-SYN-C1,x,1.2,25,25,800,red,synthetic_demo',
+ 'HP-SYN-C1,20,1.18,260,25,800,red,synthetic_demo',',22,1.2,27,25,800,red,synthetic_demo'].join('\n');}
+const TEMPLATE=['Batch_ID,Date,Day,Stage,Event,Working_Volume_L,Dilution_Factor,Biomass_g_L,Cell_count_per_mL,AXT_mg_g_DW,AXT_method,Temp_mean_C,Temp_max_C,PFD_umol_m2_s,Light_hours,pH,NO3_mM,Microscopy_note,Contamination_flag,Equipment_flag,Operator',
+ 'EXAMPLE-001,2026-11-02,0,green,inoculate,200,,0.10,,,,22.0,24.5,150,14,7.4,17.6,motile green cells,0,0,delete example rows',
+ 'EXAMPLE-001,2026-11-12,10,red,transfer,400,0.5,0.62,,1.5,HPLC,24.8,27.1,820,14,7.9,0,first non-motile cysts,0,0,delete example rows'].join('\n');
+
+/* ---------------- hero illustration: isometric tubular photobioreactor ---------------- */
+function drawHeroArt(){
+  const svg=$('#heroArt');if(!svg)return;
+  /* isometric projection on the 30° grid of the LUMIVERSION mark: u runs along the reactor fence, z is height */
+  const k=0.9,c=Math.cos(Math.PI/6),X0=96,Y0=226,P=(u,v,z)=>[X0+(u-v)*c*k,Y0+((u+v)*0.5-z)*k],pt=p=>p[0].toFixed(1)+','+p[1].toFixed(1);
+  const L=330,N=6,z0=40,dz=30,r=dz/2,tw=13,cols=['#3fa866','#77a645','#ab9a34','#d0862b','#d7612a','#cf4320'];
+  const line=(a,b,st)=>`<line x1="${a[0].toFixed(1)}" y1="${a[1].toFixed(1)}" x2="${b[0].toFixed(1)}" y2="${b[1].toFixed(1)}" ${st}/>`;
+  let g=`<defs><radialGradient id="sunGlow"><stop offset="0" stop-color="#f1cf74" stop-opacity=".45"/><stop offset=".55" stop-color="#f1cf74" stop-opacity=".12"/><stop offset="1" stop-color="#f1cf74" stop-opacity="0"/></radialGradient></defs>`;
+  for(let u=-66;u<=L+66;u+=33)g+=line(P(u,-66,0),P(u,132,0),'stroke="#ffffff" stroke-opacity=".07" stroke-width="1"');
+  for(let v=-66;v<=132;v+=33)g+=line(P(-66,v,0),P(L+66,v,0),'stroke="#ffffff" stroke-opacity=".07" stroke-width="1"');
+  g+=`<circle cx="474" cy="92" r="74" fill="url(#sunGlow)"/><circle cx="474" cy="92" r="25" fill="#DAB252"/>`;
+  const top=z0+(N-1)*dz+r+10,frame='stroke="#2c5d9f" stroke-linecap="round"';
+  [-r-12,L/3,2*L/3,L+r+12].forEach(u=>{g+=line(P(u,0,0),P(u,0,top),frame+' stroke-width="4.5"');});
+  g+=line(P(-r-12,0,12),P(L+r+12,0,12),frame+' stroke-width="3.5"');
+  g+=line(P(-r-12,0,top),P(L+r+12,0,top),frame+' stroke-width="3.5"');
+  for(let i=0;i<N-1;i++){const right=i%2===0,uE=right?L:0,zc=z0+i*dz+r;let d='';
+    for(let j=0;j<=18;j++){const th=Math.PI*j/18,u=uE+(right?1:-1)*r*Math.sin(th),z=zc-r*Math.cos(th);d+=(j?'L':'M')+pt(P(u,0,z));}
+    g+=`<path d="${d}" fill="none" stroke="${cols[i]}" stroke-width="${tw}" stroke-linecap="round"/>`;}
+  for(let i=0;i<N;i++){const z=z0+i*dz;
+    g+=line(P(0,0,z),P(L,0,z),`stroke="${cols[i]}" stroke-width="${tw}" stroke-linecap="round"`);
+    g+=line(P(8,0,z-3.6),P(L-8,0,z-3.6),'stroke="#000000" stroke-opacity=".16" stroke-width="2.8" stroke-linecap="round"');
+    g+=line(P(10,0,z+3.4),P(L-10,0,z+3.4),'stroke="#ffffff" stroke-opacity=".32" stroke-width="2.4" stroke-linecap="round"');}
+  svg.innerHTML=g;
+}
+
+/* ---------------- wiring ---------------- */
+const TAB_ALIAS={simulate:'planner',robust:'safeguards',value:'business'};
+function showTab(id){id=TAB_ALIAS[id]||id;if(!document.getElementById('tab-'+id))id='overview';
+  $$('.tab[role=tabpanel]').forEach(s=>s.hidden=s.id!=='tab-'+id);
+  $$('.tabs button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.tab===id)));
+  try{history.replaceState(null,'','#'+id);}catch(e){}
+  if(state.grid){renderAll();if(id==='data')renderBatch();}
+  window.scrollTo(0,0);}
+let tmr=null;const schedule=()=>{clearTimeout(tmr);tmr=setTimeout(recompute,120);};
+function syncFlags(){$('#f_gap').value=state.flags.gap;$('#o_gap').textContent=state.flags.gap;$('#f_offline').checked=state.flags.offline;$('#f_fault').checked=state.flags.fault;$('#f_contam').checked=state.flags.contam;}
+function initContact(){
+  if(!CONTACT_EMAIL)return;
+  $('#contactText').textContent='Tell us about your strain, reactors and site, and we will come back with a pilot proposal.';
+  const a=$('#contactBtn');a.href='mailto:'+CONTACT_EMAIL+'?subject='+encodeURIComponent('LUMIVERSION pilot enquiry');a.textContent='Email '+CONTACT_EMAIL;
+  $('#contactRow').hidden=false;
+}
+function init(){
+  drawHeroArt();initContact();
+  $('#year').textContent=new Date().getFullYear();
+  $$('.tabs button').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
+  $$('[data-go]').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.go)));
+  $('#simForm').addEventListener('input',schedule);$('#simForm').addEventListener('submit',e=>e.preventDefault());
+  $('#btnBestTs').addEventListener('click',()=>{$('#f_ts').value=state.grid.best.ts;recompute();});
+  $('#scnChips').innerHTML=Object.entries(SCN).map(([k,v])=>`<button type="button" class="chipbtn" data-scn="${k}" aria-pressed="false">${v.name}</button>`).join('');
+  $$('#scnChips .chipbtn').forEach(b=>b.addEventListener('click',()=>{state.scn=b.dataset.scn;state.flags={...SCN[state.scn].flags};syncFlags();recompute();}));
+  const flagChange=()=>{state.flags={gap:parseInt($('#f_gap').value,10),offline:$('#f_offline').checked,fault:$('#f_fault').checked,contam:$('#f_contam').checked};$('#o_gap').textContent=state.flags.gap;evaluateGate();renderAll();};
+  ['#f_gap','#f_offline','#f_fault','#f_contam'].forEach(s=>$(s).addEventListener('input',flagChange));
+  $('#btnAudit').addEventListener('click',()=>download('lumiversion-decision-log.csv','time,conditions,transfer_day,status,triggered_by\n'+state.audit.map(r=>['"'+r.time+'"',r.scn,r.ts,LV_TXT[r.lv],'"'+r.rules.replace(/"/g,'""')+'"'].join(',')).join('\n')));
+  $('#fileIn').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{$('#csvText').value=rd.result;loadData(rd.result,f.name);};rd.readAsText(f);e.target.value='';});
+  $('#btnSampleA').addEventListener('click',()=>{const t=sampleA();$('#csvText').value=t;loadData(t,'Sample A (synthetic)');});
+  $('#btnSampleB').addEventListener('click',()=>{const t=sampleB();$('#csvText').value=t;loadData(t,'Sample B (synthetic)');});
+  $('#btnSampleC').addEventListener('click',()=>{const t=sampleC();$('#csvText').value=t;loadData(t,'Sample C (synthetic)');});
+  $('#btnParse').addEventListener('click',()=>loadData($('#csvText').value,'Pasted data'));
+  $('#btnApplyMap').addEventListener('click',applyMap);
+  ['#f_pre','#f_turn'].forEach(s=>$(s).addEventListener('change',()=>{if(state.pending)applyMap();}));
+  $('#batchSel').addEventListener('change',e=>{state.data.cur=e.target.value;renderBatch();evaluateGate();renderContext();renderOverview();renderRobust();});
+  $('#btnPredict').addEventListener('click',()=>{const d=state.data,b=d.batches[d.cur];if(!b.predOK)return;b.pred=predictBatch(b,d.pre,d.turn);renderBatch();evaluateGate();renderContext();renderOverview();renderRobust();});
+  $('#btnClean').addEventListener('click',()=>download('lumiversion-cleaned-data.csv',$('#cleanOut').value));
+  ['#btnTpl','#btnTpl2'].forEach(s=>$(s).addEventListener('click',()=>download('lumiversion-data-template.csv',TEMPLATE)));
+  $('#econForm').addEventListener('input',()=>renderEcon());$('#econForm').addEventListener('submit',e=>e.preventDefault());
+  $('#btnSaveScn').addEventListener('click',()=>{const{cur,cand}=state.econ;state.saved.unshift({time:nowStr(),scn:SCN[state.scn].name,cur:`Day ${cur.ts} / ${cur.h}`,cand:`Day ${cand.ts} / ${cand.h}`,kg:`${fmt(cur.axtSell,1)} / ${fmt(cand.axtSell,1)}`,pf:`${money(cur.profit)} / ${money(cand.profit)}`});state.saved=state.saved.slice(0,20);store.set(SAVE_KEY,state.saved);renderEcon();});
+  $('#savedTbl').addEventListener('click',e=>{const i=e.target.dataset?.del;if(i==null)return;state.saved.splice(+i,1);store.set(SAVE_KEY,state.saved);renderEcon();});
+  $('#btnEconCsv').addEventListener('click',()=>download('lumiversion-business-case.csv',econCSV()));
+  {const S0=readS();$('#f_ts').value=gridSearch(params(S0),S0,buildProfile('normal',S0)).best.ts;}
+  if(window.matchMedia&&window.matchMedia('(max-width:980px)').matches)$('#moreSettings').open=false;
+  syncFlags();recompute();
+  showTab((location.hash||'').replace('#','')||'overview');
+  window.addEventListener('hashchange',()=>{const t=(location.hash||'').replace('#','');if(t)showTab(t);});
+  let rz=null;window.addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(()=>{renderAll();if(state.data)renderBatch();},200);});
+}
+init();
+</script>
+</body>
+</html>
